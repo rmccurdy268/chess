@@ -1,5 +1,7 @@
 package chess;
 
+import java.util.Objects;
+
 /**
  * Represents moving a chess piece on a chessboard
  * <p>
@@ -8,22 +10,44 @@ package chess;
  */
 public class ChessMove {
 
+    private ChessPosition endPosition;
+    private ChessPosition startPosition;
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
+        this.endPosition = endPosition;
+        this.startPosition = startPosition;
+    }
+
+    @Override
+    public String toString() {
+        return endPosition.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessMove chessMove = (ChessMove) o;
+        return Objects.equals(endPosition, chessMove.endPosition) && Objects.equals(startPosition, chessMove.startPosition);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(endPosition, startPosition);
     }
 
     /**
      * @return ChessPosition of starting location
      */
     public ChessPosition getStartPosition() {
-        throw new RuntimeException("Not implemented");
+        return endPosition;
     }
 
     /**
      * @return ChessPosition of ending location
      */
-    public ChessPosition getEndPosition() {
-        throw new RuntimeException("Not implemented");
+    public ChessPosition getEndPosition(){
+        return startPosition;
     }
 
     /**
