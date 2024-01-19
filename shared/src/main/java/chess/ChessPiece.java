@@ -12,9 +12,11 @@ import java.util.*;
 public class ChessPiece {
 
     private final PieceType type;
+    private final ChessGame.TeamColor color;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.type = type;
+        this.color = pieceColor;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        throw new RuntimeException("Not implemented");
+        return color;
     }
 
     /**
@@ -76,17 +78,28 @@ public class ChessPiece {
             case BISHOP:
                 int colBuffer = col;
                 int rowBuffer = row;
-                int boardLength = 8;
                 for (int i = row+1; i < 9; i++) {
 
                     colBuffer++;
                     rowBuffer++;
+
                     ChessPosition endPosition = new ChessPosition(rowBuffer, colBuffer);
+                    if (isOccupied(board,endPosition)){
+                        if ((board.getPiece(endPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())){
+                            ChessMove newMove = new ChessMove(myPosition, endPosition, null);
+                            setOfMoves.add(newMove);
+                            break;
+                        }
+                        else{
+                            break;
+                        }
+                    }
                     ChessMove newMove = new ChessMove(myPosition, endPosition, null);
                     setOfMoves.add(newMove);
-                    if (colBuffer == 8) {
+                    if ((colBuffer == 8) || (rowBuffer == 8)) {
                         break;
                     }
+
                 }
                 colBuffer = col;
                 rowBuffer = row;
@@ -94,9 +107,19 @@ public class ChessPiece {
                     colBuffer++;
                     rowBuffer--;
                     ChessPosition endPosition = new ChessPosition(rowBuffer, colBuffer);
+                    if (isOccupied(board,endPosition)){
+                        if ((board.getPiece(endPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())){
+                            ChessMove newMove = new ChessMove(myPosition, endPosition, null);
+                            setOfMoves.add(newMove);
+                            break;
+                        }
+                        else{
+                            break;
+                        }
+                    }
                     ChessMove newMove = new ChessMove(myPosition, endPosition, null);
                     setOfMoves.add(newMove);
-                    if (colBuffer == 8) {
+                    if (colBuffer == 8 || rowBuffer == 1) {
                         break;
                     }
                 }
@@ -107,9 +130,19 @@ public class ChessPiece {
                     colBuffer--;
                     rowBuffer++;
                     ChessPosition endPosition = new ChessPosition(rowBuffer, colBuffer);
+                    if (isOccupied(board,endPosition)){
+                        if ((board.getPiece(endPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())){
+                            ChessMove newMove = new ChessMove(myPosition, endPosition, null);
+                            setOfMoves.add(newMove);
+                            break;
+                        }
+                        else{
+                            break;
+                        }
+                    }
                     ChessMove newMove = new ChessMove(myPosition, endPosition, null);
                     setOfMoves.add(newMove);
-                    if (colBuffer == 1) {
+                    if (colBuffer == 1 || rowBuffer == 8) {
                         break;
                     }
                 }
@@ -119,11 +152,23 @@ public class ChessPiece {
                     colBuffer--;
                     rowBuffer--;
                     ChessPosition endPosition = new ChessPosition(rowBuffer, colBuffer);
+                    if (isOccupied(board,endPosition)){
+                        if ((board.getPiece(endPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())){
+                            ChessMove newMove = new ChessMove(myPosition, endPosition, null);
+                            setOfMoves.add(newMove);
+                            break;
+                        }
+                        else{
+                            break;
+                        }
+                    }
                     ChessMove newMove = new ChessMove(myPosition, endPosition, null);
                     setOfMoves.add(newMove);
-                    if (colBuffer == 1) {
+                    if (colBuffer == 1 || rowBuffer == 1) {
                         break;
                     }
+
+
                 }
 
                 break;
@@ -137,12 +182,7 @@ public class ChessPiece {
 
         return setOfMoves;
     }
-    public Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition){
-        HashSet<ChessMove> movesSet = new HashSet<>();
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
-
-        return movesSet;
-
+    public boolean isOccupied(ChessBoard board, ChessPosition position){
+        return board.getPiece(position) != null;
     }
 }
