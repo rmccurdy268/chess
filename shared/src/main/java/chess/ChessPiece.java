@@ -72,7 +72,7 @@ public class ChessPiece {
         Set<ChessMove> setOfMoves = new HashSet<ChessMove>();
         switch (piece.getPieceType()){
             case KING:
-                break;
+                return kingMoves(board, myPosition);
             case QUEEN:
                 break;
             case BISHOP:
@@ -173,7 +173,8 @@ public class ChessPiece {
 
                 break;
             case KNIGHT:
-                break;
+                return knightMoves(board, myPosition);
+
             case ROOK:
                 break;
             case PAWN:
@@ -184,5 +185,159 @@ public class ChessPiece {
     }
     public boolean isOccupied(ChessBoard board, ChessPosition position){
         return board.getPiece(position) != null;
+    }
+
+    public Collection <ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition){
+        Set<ChessMove> setOfMoves = new HashSet<ChessMove>();
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        int colBuffer = col + 1;
+        int rowBuffer = row;
+
+        if (isValid(rowBuffer, colBuffer)){
+            ChessPosition tempPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (isOccupied(board, tempPosition)){
+                if ((board.getPiece(tempPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                    ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                    setOfMoves.add(newMove);
+                }
+            }
+            else{
+                ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+        colBuffer = col + 1;
+        rowBuffer = row + 1;
+
+        if (isValid(rowBuffer, colBuffer)){
+            ChessPosition tempPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (isOccupied(board, tempPosition)){
+                if ((board.getPiece(tempPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                    ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                    setOfMoves.add(newMove);
+                }
+            }
+            else{
+                ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+
+        colBuffer = col;
+        rowBuffer = row + 1;
+
+        if (isValid(rowBuffer, colBuffer)){
+            ChessPosition tempPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (isOccupied(board, tempPosition)){
+                if ((board.getPiece(tempPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                    ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                    setOfMoves.add(newMove);
+                }
+            }
+            else{
+                ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+
+        colBuffer = col - 1;
+        rowBuffer = row + 1;
+
+        if (isValid(rowBuffer, colBuffer)){
+            ChessPosition tempPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (isOccupied(board, tempPosition)){
+                if ((board.getPiece(tempPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                    ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                    setOfMoves.add(newMove);
+                }
+            }
+            else{
+                ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+
+        colBuffer = col - 1;
+        rowBuffer = row;
+
+        if (isValid(rowBuffer, colBuffer)){
+            ChessPosition tempPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (isOccupied(board, tempPosition)){
+                if ((board.getPiece(tempPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                    ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                    setOfMoves.add(newMove);
+                }
+            }
+            else{
+                ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+        colBuffer = col - 1;
+        rowBuffer = row - 1;
+
+        if (isValid(rowBuffer, colBuffer)){
+            ChessPosition tempPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (isOccupied(board, tempPosition)){
+                if ((board.getPiece(tempPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                    ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                    setOfMoves.add(newMove);
+                }
+            }
+            else{
+                ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+
+        colBuffer = col;
+        rowBuffer = row - 1;
+
+        if (isValid(rowBuffer, colBuffer)){
+            ChessPosition tempPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (isOccupied(board, tempPosition)){
+                if ((board.getPiece(tempPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                    ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                    setOfMoves.add(newMove);
+                }
+            }
+            else{
+                ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+
+        colBuffer = col + 1;
+        rowBuffer = row - 1;
+
+        if (isValid(rowBuffer, colBuffer)){
+            ChessPosition tempPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (isOccupied(board, tempPosition)){
+                if ((board.getPiece(tempPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                    ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                    setOfMoves.add(newMove);
+                }
+            }
+            else{
+                ChessMove newMove = new ChessMove(myPosition, tempPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+
+        return setOfMoves;
+    }
+
+    public Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition){
+        Set <ChessMove> setOfMoves = new HashSet<>();
+
+        return setOfMoves;
+    }
+
+
+
+
+    public static boolean isValid(int row, int col) {
+        return (row != 0 && row != 9) && (col != 0 && col != 9);
     }
 }
