@@ -183,7 +183,7 @@ public class ChessPiece {
 
         return setOfMoves;
     }
-    public boolean isOccupied(ChessBoard board, ChessPosition position){
+    public static boolean isOccupied(ChessBoard board, ChessPosition position){
         return board.getPiece(position) != null;
     }
 
@@ -330,14 +330,93 @@ public class ChessPiece {
 
     public Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition){
         Set <ChessMove> setOfMoves = new HashSet<>();
+        int col = myPosition.getColumn();
+        int row = myPosition.getRow();
+        if (isValid(row + 2, col + 1)){
+            ChessPosition testPosition = new ChessPosition(row + 2, col  + 1);
+            if (moveCheck(board, myPosition, testPosition)){
+                ChessMove newMove = new ChessMove(myPosition, testPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+        if (isValid(row + 1, col + 2)){
+            ChessPosition testPosition = new ChessPosition(row + 1, col  + 2);
+            if (moveCheck(board, myPosition, testPosition)){
+                ChessMove newMove = new ChessMove(myPosition, testPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
 
+        if (isValid(row - 2, col + 1)){
+            ChessPosition testPosition = new ChessPosition(row - 2, col  + 1);
+            if (moveCheck(board, myPosition, testPosition)){
+                ChessMove newMove = new ChessMove(myPosition, testPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+
+        if (isValid(row + 2, col - 1)){
+            ChessPosition testPosition = new ChessPosition(row + 2, col  - 1);
+            if (moveCheck(board, myPosition, testPosition)){
+                ChessMove newMove = new ChessMove(myPosition, testPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+
+        if (isValid(row - 2, col - 1)){
+            ChessPosition testPosition = new ChessPosition(row - 2, col  - 1);
+            if (moveCheck(board, myPosition, testPosition)){
+                ChessMove newMove = new ChessMove(myPosition, testPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+        if (isValid(row - 1, col + 2)){
+            ChessPosition testPosition = new ChessPosition(row - 1, col  + 2);
+            if (moveCheck(board, myPosition, testPosition)){
+                ChessMove newMove = new ChessMove(myPosition, testPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+
+        if (isValid(row + 1, col - 2)){
+            ChessPosition testPosition = new ChessPosition(row + 1, col  - 2);
+            if (moveCheck(board, myPosition, testPosition)){
+                ChessMove newMove = new ChessMove(myPosition, testPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
+
+        if (isValid(row - 1, col - 2)){
+            ChessPosition testPosition = new ChessPosition(row - 1, col  - 2);
+            if (moveCheck(board, myPosition, testPosition)){
+                ChessMove newMove = new ChessMove(myPosition, testPosition, null);
+                setOfMoves.add(newMove);
+            }
+        }
         return setOfMoves;
     }
 
 
-
+    public static boolean moveCheck(ChessBoard board, ChessPosition ogPosition, ChessPosition endPosition){
+        if (isOccupied(board, endPosition)){
+            if (board.getPiece(endPosition).getTeamColor() != board.getPiece(ogPosition).getTeamColor()){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else{
+            return true;
+        }
+    }
 
     public static boolean isValid(int row, int col) {
-        return (row != 0 && row != 9) && (col != 0 && col != 9);
+        if (((row <= 0)||(row >= 9))||((col <= 0)||(col >= 9))){
+            return false;
+        }
+        else{
+            return true;
+        }
     }
 }
