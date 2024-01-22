@@ -176,7 +176,7 @@ public class ChessPiece {
                 return knightMoves(board, myPosition);
 
             case ROOK:
-                break;
+                return rookMoves(board, myPosition);
             case PAWN:
                 break;
         }
@@ -553,6 +553,106 @@ public class ChessPiece {
             }
             ChessPosition endPosition = new ChessPosition(rowBuffer, colBuffer);
             if (moveCheck(board, myPosition, endPosition)){
+                ChessMove newMove = new ChessMove(myPosition, endPosition, null);
+                setOfMoves.add(newMove);
+                if(isOccupied(board, endPosition)) {
+                    if ((board.getPiece(endPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                        break;
+                    }
+                }
+            }
+            else{
+                break;
+            }
+
+        }
+
+        colBuffer = col;
+        rowBuffer = row;
+        while (valid){
+            colBuffer--;
+            if (!isValid(rowBuffer, colBuffer)){
+                break;
+            }
+            ChessPosition endPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (moveCheck(board, myPosition, endPosition)) {
+                ChessMove newMove = new ChessMove(myPosition, endPosition, null);
+                setOfMoves.add(newMove);
+                if(isOccupied(board, endPosition)) {
+                    if ((board.getPiece(endPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                        break;
+                    }
+                }
+            }
+            else{
+                break;
+            }
+
+        }
+        return setOfMoves;
+    }
+
+    Collection <ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition){
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        int colBuffer = col;
+        int rowBuffer = row;
+        Set<ChessMove> setOfMoves = new HashSet<>();
+        boolean valid = true;
+
+        while (valid){
+            rowBuffer++;
+            if (!isValid(rowBuffer, colBuffer)){
+                break;
+            }
+            ChessPosition endPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (moveCheck(board, myPosition, endPosition)) {
+                ChessMove newMove = new ChessMove(myPosition, endPosition, null);
+                setOfMoves.add(newMove);
+                if(isOccupied(board, endPosition)) {
+                    if ((board.getPiece(endPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                        break;
+                    }
+                }
+            }
+            else{
+                break;
+            }
+
+        }
+
+        colBuffer = col;
+        rowBuffer = row;
+        while (valid){
+            rowBuffer--;
+            if (!isValid(rowBuffer, colBuffer)){
+                break;
+            }
+            ChessPosition endPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (moveCheck(board, myPosition, endPosition)) {
+                ChessMove newMove = new ChessMove(myPosition, endPosition, null);
+                setOfMoves.add(newMove);
+                if(isOccupied(board, endPosition)) {
+                    if ((board.getPiece(endPosition).getTeamColor()) != (board.getPiece(myPosition).getTeamColor())) {
+                        break;
+                    }
+                }
+            }
+            else{
+                break;
+            }
+
+        }
+
+        colBuffer = col;
+        rowBuffer = row;
+        while (valid){
+            colBuffer++;
+            if (!isValid(rowBuffer, colBuffer)){
+                break;
+            }
+            ChessPosition endPosition = new ChessPosition(rowBuffer, colBuffer);
+            if (moveCheck(board, myPosition, endPosition)) {
                 ChessMove newMove = new ChessMove(myPosition, endPosition, null);
                 setOfMoves.add(newMove);
                 if(isOccupied(board, endPosition)) {
