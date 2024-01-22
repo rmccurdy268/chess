@@ -170,6 +170,7 @@ public class ChessPiece {
 
 
                 }
+                break;
 
 
             case KNIGHT:
