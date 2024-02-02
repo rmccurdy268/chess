@@ -87,6 +87,7 @@ public class ChessGame {
         else{
             var movePiece = board.getPiece(initialPosition);
             board.addPiece(move.getEndPosition(), movePiece);
+            board.nullifyPiece(initialPosition);
         }
 
 
