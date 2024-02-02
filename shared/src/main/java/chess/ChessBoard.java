@@ -24,7 +24,7 @@ public class ChessBoard {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(squares);
+        return Arrays.deepHashCode(squares);
     }
 
     /**
@@ -46,6 +46,10 @@ public class ChessBoard {
      */
     public ChessPiece getPiece(ChessPosition position) {
         return squares[position.getRow()-1][position.getColumn()-1];
+    }
+
+    public void nullifyPiece(ChessPosition position){
+        squares[position.getRow()-1][position.getColumn()-1] = null;
     }
 
     /**
