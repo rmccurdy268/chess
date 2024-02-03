@@ -86,8 +86,16 @@ public class ChessGame {
         }
         else{
             var movePiece = board.getPiece(initialPosition);
-            board.addPiece(move.getEndPosition(), movePiece);
-            board.nullifyPiece(initialPosition);
+            if (move.getPromotionPiece() == null){
+                board.addPiece(move.getEndPosition(), movePiece);
+                board.nullifyPiece(initialPosition);
+            }
+            else{
+                var promoPiece = new ChessPiece(movePiece.getTeamColor(),move.getPromotionPiece());
+                board.addPiece(move.getEndPosition(), promoPiece);
+                board.nullifyPiece(initialPosition);
+            }
+
         }
 
 
