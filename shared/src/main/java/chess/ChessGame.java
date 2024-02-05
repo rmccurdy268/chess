@@ -1,8 +1,6 @@
 package chess;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -13,9 +11,13 @@ import java.util.Objects;
 public class ChessGame {
     private ChessBoard board = new ChessBoard();
     private TeamColor teamTurn;
+    private Map<ChessPosition, ChessPiece> whitePieces;
+    private Map<ChessPosition, ChessPiece> blackPieces;
     public ChessGame() {
         board = new ChessBoard();
         teamTurn = TeamColor.WHITE;
+        whitePieces = new HashMap<ChessPosition, ChessPiece>();
+        blackPieces = new HashMap<ChessPosition, ChessPiece>();
     }
 
     /**
@@ -94,7 +96,13 @@ public class ChessGame {
                     board.nullifyPiece(move.getEndPosition());
                 }
                 board.addPiece(move.getEndPosition(), movePiece);
+                if(movePiece.getPieceType() == ChessPiece.PieceType.KING){
+                    board.nullifyPiece(initialPosition);
+                }
                 if(isInCheck(teamTurn)){
+                    if(movePiece.getPieceType() == ChessPiece.PieceType.KING){
+                        board.addPiece(initialPosition,movePiece);
+                    }
                     board.nullifyPiece(move.getEndPosition());
                     throw new InvalidMoveException("This move leaves you in check!");
                 }
@@ -169,7 +177,62 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> moveSet = new HashSet<ChessMove>();
+        if (isInCheck(teamColor)) {
+            for (int i = 1; i<9; i++) {
+                for (int j = 1; j < 9; j++) {
+                    if (board.getPiece(new ChessPosition(i, j)) != null) {
+                        TeamColor thisTeamColor = board.getPiece(new ChessPosition(i, j)).getTeamColor();
+                        if (thisTeamColor == TeamColor.WHITE) {
+                            whitePieces.put(new ChessPosition(i,j), board.getPiece(new ChessPosition(i,j)));
+                        } else if (thisTeamColor == TeamColor.BLACK) {
+                            blackPieces.put(new ChessPosition(i,j), board.getPiece(new ChessPosition(i,j)));
+                        }
+                    }
+                }
+            }
+        }
+
+
+            switch(teamColor){
+                case WHITE:
+                    for (ChessPosition each:whitePieces.keySet()){
+                        moveSet = whitePieces.get(each).pieceMoves(board,each);
+                        for (ChessMove every:moveSet){
+                            try {
+                                makeMove(every);
+                                if(!isInCheck(teamColor)){
+                                    return false;
+                                }
+                            } catch (InvalidMoveException e) {}
+                        }
+                    }
+                case BLACK:
+                    for (ChessPosition each:blackPieces.keySet()){
+                        moveSet = blackPieces.get(each).pieceMoves(board,each);
+                        for (ChessMove every:moveSet){
+                            boolean replaced = false;
+                            ChessPiece pieceToReplace = board.getPiece(every.getEndPosition());
+                            try {
+                                if(board.getPiece(every.getEndPosition()) != null){
+                                    replaced = true;
+                                }
+                                makeMove(every);
+                                if(!isInCheck(teamColor)){
+                                    return false;
+                                }
+                            } catch (InvalidMoveException e) {
+                                if (replaced){
+                                    board.addPiece(every.getEndPosition(), pieceToReplace);
+                                }
+                            }
+                        }
+                    }
+            }
+
+        whitePieces.clear();
+        blackPieces.clear();
+        return isInCheck(teamColor);
     }
 
     /**
