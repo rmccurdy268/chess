@@ -110,6 +110,7 @@ public class ChessGame {
                     board.nullifyPiece(move.getEndPosition());
                     throw new InvalidMoveException("You need to move out of check!");
                 }
+                board.nullifyPiece(initialPosition);
             }
         }
         switch(getTeamTurn()){
