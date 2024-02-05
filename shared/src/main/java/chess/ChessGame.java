@@ -74,10 +74,10 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         var initialPosition = move.getStartPosition();
-        Collection<ChessMove> possibleMoves = board.getPiece(initialPosition).pieceMoves(board,initialPosition);
+        Collection<ChessMove> possibleMoves = board.getPiece(initialPosition).pieceMoves(board, initialPosition);
         boolean isValid = false;
-        for (ChessMove newMove : possibleMoves){
-            if (newMove.equals(move)){
+        for (ChessMove newMove : possibleMoves) {
+            if (newMove.equals(move)) {
                 isValid = true;
                 break;
             }
@@ -94,8 +94,11 @@ public class ChessGame {
                     board.nullifyPiece(move.getEndPosition());
                 }
                 board.addPiece(move.getEndPosition(), movePiece);
+                if(isInCheck(teamTurn)){
+                    board.nullifyPiece(move.getEndPosition());
+                    throw new InvalidMoveException("You need to move out of check!");
+                }
                 board.nullifyPiece(initialPosition);
-
             }
             else{
                 var promoPiece = new ChessPiece(movePiece.getTeamColor(),move.getPromotionPiece());
@@ -103,7 +106,10 @@ public class ChessGame {
                     board.nullifyPiece(move.getEndPosition());
                 }
                 board.addPiece(move.getEndPosition(), promoPiece);
-                board.nullifyPiece(initialPosition);
+                if(isInCheck(teamTurn)){
+                    board.nullifyPiece(move.getEndPosition());
+                    throw new InvalidMoveException("You need to move out of check!");
+                }
             }
         }
         switch(getTeamTurn()){
