@@ -96,7 +96,7 @@ public class ChessGame {
                 board.addPiece(move.getEndPosition(), movePiece);
                 if(isInCheck(teamTurn)){
                     board.nullifyPiece(move.getEndPosition());
-                    throw new InvalidMoveException("You need to move out of check!");
+                    throw new InvalidMoveException("This move leaves you in check!");
                 }
                 board.nullifyPiece(initialPosition);
             }
