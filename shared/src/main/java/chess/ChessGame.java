@@ -79,6 +79,7 @@ public class ChessGame {
         return finalSet;
     }
 
+    //Checks to see if a move will potentially put me into check
     public boolean putsMeInCheck(ChessMove move, TeamColor pieceColor){
         boolean check;
         ChessPosition currentPos = move.getStartPosition();
