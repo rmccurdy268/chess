@@ -65,7 +65,44 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> setOfMoves = new HashSet<ChessMove>();
+        Collection<ChessMove> finalSet = new HashSet<ChessMove>();
+        if (board.getPiece(startPosition) != null){
+            setOfMoves = board.getPiece(startPosition).pieceMoves(board, startPosition);
+        }
+        for (ChessMove each: setOfMoves){
+            boolean isValid = putsMeInCheck(each, board.getPiece(each.getStartPosition()).getTeamColor());
+            if (!isValid){
+                finalSet.add(each);
+            }
+        }
+        return finalSet;
+    }
+
+    public boolean putsMeInCheck(ChessMove move, TeamColor pieceColor){
+        boolean check;
+        ChessPosition currentPos = move.getStartPosition();
+        ChessPosition movePos = move.getEndPosition();
+        ChessPiece myPiece = board.getPiece(currentPos);
+        ChessPiece replacePiece = null;
+        if(board.getPiece(movePos)!= null){
+            replacePiece = board.getPiece(movePos);
+        }
+        board.nullifyPiece(movePos);
+        board.addPiece(movePos,myPiece);
+        board.nullifyPiece(currentPos);
+        if(isInCheck(pieceColor)){
+            check = true;
+        }
+        else{
+            check = false;
+        }
+        board.addPiece(currentPos, myPiece);
+        board.nullifyPiece(movePos);
+        board.addPiece(movePos, replacePiece);
+
+
+        return check;
     }
 
     /**
@@ -193,25 +230,33 @@ public class ChessGame {
             }
         }
 
-
+            boolean replaced = false;
             switch(teamColor){
+
                 case WHITE:
                     for (ChessPosition each:whitePieces.keySet()){
                         moveSet = whitePieces.get(each).pieceMoves(board,each);
                         for (ChessMove every:moveSet){
+                            ChessPiece pieceToReplace = board.getPiece(every.getEndPosition());
                             try {
+                                if(board.getPiece(every.getEndPosition()) != null){
+                                    replaced = true;
+                                }
                                 makeMove(every);
                                 if(!isInCheck(teamColor)){
                                     return false;
                                 }
-                            } catch (InvalidMoveException e) {}
+                            } catch (InvalidMoveException e) {
+                                if (replaced){
+                                    board.addPiece(every.getEndPosition(), pieceToReplace);
+                                }
+                            }
                         }
                     }
                 case BLACK:
                     for (ChessPosition each:blackPieces.keySet()){
                         moveSet = blackPieces.get(each).pieceMoves(board,each);
                         for (ChessMove every:moveSet){
-                            boolean replaced = false;
                             ChessPiece pieceToReplace = board.getPiece(every.getEndPosition());
                             try {
                                 if(board.getPiece(every.getEndPosition()) != null){
@@ -243,7 +288,34 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> masterSet = new HashSet<ChessMove>();
+        for (int i = 1; i<9; i++) {
+            for (int j = 1; j < 9; j++) {
+                if (board.getPiece(new ChessPosition(i, j)) != null) {
+                    TeamColor thisTeamColor = board.getPiece(new ChessPosition(i, j)).getTeamColor();
+                    if (thisTeamColor == TeamColor.WHITE) {
+                        whitePieces.put(new ChessPosition(i,j), board.getPiece(new ChessPosition(i,j)));
+                    } else if (thisTeamColor == TeamColor.BLACK) {
+                        blackPieces.put(new ChessPosition(i,j), board.getPiece(new ChessPosition(i,j)));
+                    }
+                }
+            }
+        }
+        if (teamColor == TeamColor.WHITE){
+            for(ChessPosition each:whitePieces.keySet()){
+                masterSet.addAll(validMoves(each));
+            }
+        } else if (teamColor == TeamColor.BLACK) {
+            for(ChessPosition each:blackPieces.keySet()){
+                masterSet.addAll(validMoves(each));
+            }
+        }
+        if (masterSet.isEmpty()){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     /**
