@@ -9,6 +9,7 @@ public class Server {
 
         Spark.staticFiles.location("web");
         Spark.init();
+        Spark.delete("/db", this::clear);
         // Register your endpoints and handle exceptions here.
 
         Spark.awaitInitialization();
@@ -18,5 +19,8 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+    private Object clear(){
+
     }
 }
