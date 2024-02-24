@@ -3,51 +3,54 @@ package dataAccess;
 import model.AuthData;
 import model.UserData;
 
-import java.util.HashSet;
-import java.util.Objects;
-
-
+import java.util.HashMap;
 public class MemoryUserDAO implements UserDAO{
 
-    private HashSet<AuthData>authSet;
-    private HashSet<UserData>userSet;
+    private HashMap<String, UserData> userMap;
+    private HashMap<String, AuthData> authMap;
 
-    private int ogAuth = 1;
-    public String createUser(String username, String password, String email){
-        userSet.add(new UserData(username,password,email));
-        return createAuth(username);
+    private Integer ogAuth = 0;
+
+    public MemoryUserDAO(){
+        userMap = new HashMap<String, UserData>();
+        authMap = new HashMap<String,AuthData>();
     }
 
+    public void createUser(String username, String password, String email){
+        userMap.put(username, new UserData(username,password,email));
+    }
     public String createAuth(String username){
-        ogAuth++;
-        authSet.add(new AuthData(String.valueOf(ogAuth),username));
-        return String.valueOf(ogAuth);
+        String newAuth = String.valueOf(ogAuth++);
+        authMap.put(username, new AuthData(String.valueOf(newAuth), username));
+        return newAuth;
+    }
+    public boolean checkCredentials(String username, String password){
+        UserData myUserData = getUser(username);
+        return password.equals(myUserData.password());
     }
 
-    public boolean checkAuth(AuthData auth) {
-        return authSet.contains(auth);
-    }
-    public UserData getUser(String username) {
+    public AuthData checkAuth(String auth) {
+        return authMap.get(auth);
     }
 
-    public UserData checkCredentials(String username, String password){
-
+    //getUser throws data exception when the user already exists
+    public UserData getUser(String username){
+        return userMap.get(username);
     }
 
-    public String getUsername(String authToken){
-        try{
-            for(AuthData each:authSet){
-                if(Objects.equals(each.authToken(), authToken)){
-                    return each.username();
-                }
-            }
-        }
-        catch (DataAccessException("User does not exist in Database")){
-            throw new ;
-        }
+    public AuthData getUsername(String authToken){
+        return authMap.get(authToken);
+    }
+
+    public void deleteAuth(String authToken){
+        authMap.remove(authToken);
     }
 
     public void clearUsers(){
+        userMap.clear();
+    }
 
+    public void clearAuth(){
+        authMap.clear();
     }
 }

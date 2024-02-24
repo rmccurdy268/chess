@@ -1,19 +1,22 @@
 package dataAccess;
-
-import model.AuthData;
 import model.UserData;
+import model.AuthData;
 public interface UserDAO {
-    String createUser(String username, String password, String email) throws DataAccessException;
+    void createUser(String username, String password, String email) throws DataAccessException;
 
     String createAuth(String username) throws DataAccessException;
 
-    AuthData checkAuth(AuthData auth) throws DataAccessException;
+    AuthData checkAuth(String auth) throws DataAccessException;
 
     UserData getUser(String username) throws DataAccessException;
 
-    UserData checkCredentials(String username, String password) throws DataAccessException;
+    AuthData getUsername(String auth) throws DataAccessException;
 
-    String getUsername(String auth) throws DataAccessException;
+    boolean checkCredentials(String username, String password) throws DataAccessException;
+
+    void deleteAuth(String auth) throws DataAccessException;
 
     void clearUsers() throws DataAccessException;
+
+    void clearAuth() throws DataAccessException;
 }

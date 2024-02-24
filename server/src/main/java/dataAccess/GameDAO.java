@@ -3,18 +3,16 @@ package dataAccess;
 
 import model.GameData;
 
-import java.util.Collection;
+import java.util.HashMap;
 
 public interface GameDAO {
-    Collection<GameData> getGames() throws DataAccessException;
+    HashMap<Integer, GameData> getGames() throws DataAccessException;
 
-    GameData addGame(String name) throws DataAccessException;
+    Integer addGame(String name) throws DataAccessException;
 
-    GameData getGame(String gameID) throws DataAccessException;
+    GameData getGame(int gameID) throws DataAccessException;
 
-    String getPlayer(String teamColor, String gameID) throws DataAccessException;
-
-    void addPlayer(String userName, String teamColor, String gameID) throws DataAccessException;
+    void addPlayer(String userName, String teamColor, int gameID) throws DataAccessException;
 
     void clearGames() throws DataAccessException;
 
