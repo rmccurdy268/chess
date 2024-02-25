@@ -8,10 +8,12 @@ import java.util.Objects;
 
 public class MemoryGameDAO implements GameDAO{
     private HashMap<Integer,GameData> gameMap;
+    private HashMap<Integer, String> observerMap;
     private Integer ogGameID;
 
     public MemoryGameDAO(){
         gameMap = new HashMap<Integer,GameData>();
+        ogGameID = 0;
     }
     public HashMap<Integer,GameData> getGames(){
         return gameMap;

@@ -13,7 +13,7 @@ public class MemoryUserDAO implements UserDAO{
 
     public MemoryUserDAO(){
         userMap = new HashMap<String, UserData>();
-        authMap = new HashMap<String,AuthData>();
+        authMap = new HashMap<String, AuthData>();
     }
 
     public void createUser(String username, String password, String email){
@@ -21,7 +21,7 @@ public class MemoryUserDAO implements UserDAO{
     }
     public String createAuth(String username){
         String newAuth = String.valueOf(ogAuth++);
-        authMap.put(username, new AuthData(String.valueOf(newAuth), username));
+        authMap.put(newAuth, new AuthData(String.valueOf(newAuth), username));
         return newAuth;
     }
     public boolean checkCredentials(String username, String password){
@@ -38,7 +38,16 @@ public class MemoryUserDAO implements UserDAO{
         return userMap.get(username);
     }
 
-    public AuthData getUsername(String authToken){
+    public String getAuthToken(String username){
+        for(AuthData each: authMap.values()){
+            if(each.username().equals(username)){
+                return each.authToken();
+            }
+        }
+        return null;
+    }
+
+    public AuthData getAuthData(String authToken){
         return authMap.get(authToken);
     }
 
