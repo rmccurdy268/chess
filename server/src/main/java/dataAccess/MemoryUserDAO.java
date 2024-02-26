@@ -21,7 +21,7 @@ public class MemoryUserDAO implements UserDAO{
     }
     public String createAuth(String username){
         String newAuth = String.valueOf(ogAuth++);
-        authMap.put(newAuth, new AuthData(String.valueOf(newAuth), username));
+        authMap.put(newAuth, new AuthData(username, String.valueOf(newAuth)));
         return newAuth;
     }
     public boolean checkCredentials(String username, String password){

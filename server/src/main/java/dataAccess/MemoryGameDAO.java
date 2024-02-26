@@ -13,7 +13,7 @@ public class MemoryGameDAO implements GameDAO{
 
     public MemoryGameDAO(){
         gameMap = new HashMap<Integer,GameData>();
-        ogGameID = 0;
+        ogGameID = 1;
     }
     public HashMap<Integer,GameData> getGames(){
         return gameMap;
