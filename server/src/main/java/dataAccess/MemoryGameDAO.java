@@ -4,15 +4,17 @@ import chess.ChessGame;
 import model.GameData;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Objects;
 
 public class MemoryGameDAO implements GameDAO{
-    private HashMap<Integer,GameData> gameMap;
-    private HashMap<Integer, String> observerMap;
+    private final HashMap<Integer,GameData> gameMap;
+    private final HashMap<Integer, HashSet<String>> observerMap;
     private Integer ogGameID;
 
     public MemoryGameDAO(){
         gameMap = new HashMap<Integer,GameData>();
+        observerMap = new HashMap<Integer, HashSet<String>>();
         ogGameID = 1;
     }
     public HashMap<Integer,GameData> getGames(){
@@ -22,7 +24,7 @@ public class MemoryGameDAO implements GameDAO{
 
    public Integer addGame(String name){
        Integer myGameId = ogGameID++;
-        gameMap.put(myGameId, new GameData(myGameId,"","",name, new ChessGame()));
+        gameMap.put(myGameId, new GameData(myGameId,null,null, name, new ChessGame()));
         return getGame(myGameId).gameID();
    }
 
@@ -43,7 +45,13 @@ public class MemoryGameDAO implements GameDAO{
         }
     }
 
+    public void addObserver(String username, int gameID){
+        observerMap.computeIfAbsent(gameID, k -> new HashSet<String>());
+        observerMap.get(gameID).add(username);
+    }
+
     public void clearGames() {
         gameMap.clear();
+        observerMap.clear();
     }
 }

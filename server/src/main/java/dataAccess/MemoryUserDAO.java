@@ -24,9 +24,20 @@ public class MemoryUserDAO implements UserDAO{
         authMap.put(newAuth, new AuthData(username, String.valueOf(newAuth)));
         return newAuth;
     }
-    public boolean checkCredentials(String username, String password){
+    public boolean checkCredentials(String username, String password)throws DataAccessException{
         UserData myUserData = getUser(username);
-        return password.equals(myUserData.password());
+        if(myUserData == null){
+            throw new DataAccessException.UnauthorizedException();
+        }
+        else{
+            String newPassword = myUserData.password();
+            if(password.equals(newPassword)){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
     }
 
     public AuthData checkAuth(String auth) {

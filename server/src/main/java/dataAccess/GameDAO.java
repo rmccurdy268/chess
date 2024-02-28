@@ -14,6 +14,8 @@ public interface GameDAO {
 
     void addPlayer(String userName, String teamColor, int gameID) throws DataAccessException;
 
+    void addObserver(String userName, int gameId) throws DataAccessException;
+
     void clearGames() throws DataAccessException;
 
 }

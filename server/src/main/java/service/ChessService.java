@@ -5,6 +5,7 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class ChessService {
@@ -25,7 +26,7 @@ public class ChessService {
             return myUserDAO.getAuthData(myAuth);
         }
         else{
-            throw new DataAccessException("User Exists");
+            throw new DataAccessException.AlreadyTakenException();
         }
     }
 
@@ -33,10 +34,12 @@ public class ChessService {
     public AuthData login(String username, String password)throws DataAccessException{
         boolean exists = myUserDAO.checkCredentials(username, password);
         if (!exists) {
-            throw new DataAccessException("Wrong username/password");
+            throw new DataAccessException.UnauthorizedException();
         }
         UserData myUserData = myUserDAO.getUser(username);
         String myAuth = myUserDAO.getAuthToken(username);
+
+        myAuth = myUserDAO.createAuth(username);
         return myUserDAO.getAuthData(myAuth);
     }
 
@@ -46,7 +49,7 @@ public class ChessService {
             myUserDAO.deleteAuth(authToken);
         }
         else{
-            throw new DataAccessException("auth not in database");
+            throw new DataAccessException.UnauthorizedException();
 
         }
     }
@@ -60,7 +63,7 @@ public class ChessService {
     //creates a new game
     public Integer createGame(String authToken, String gameName)throws DataAccessException{
         if(myUserDAO.checkAuth(authToken) == null){
-            throw new DataAccessException("Incorrect AuthToken");
+            throw new DataAccessException.UnauthorizedException();
         }
         return myGameDAO.addGame(gameName);
     }
@@ -68,14 +71,47 @@ public class ChessService {
     //joins game as existing user
     public void joinGame(String authToken, String teamColor, Integer gameID)throws DataAccessException{
         AuthData myUser = myUserDAO.checkAuth(authToken);
+        if (myUser == null){
+            throw new DataAccessException.UnauthorizedException();
+        }
         GameData myGame = myGameDAO.getGame(gameID);
-        myGameDAO.addPlayer(myUser.username(),teamColor,gameID);
+        if(myGame == null){
+            throw new DataAccessException.BadRequestException();
+        }
+        if((teamColor == null)||(teamColor.isEmpty())||(teamColor.equals("empty"))){
+            myGameDAO.addObserver(myUser.username(),gameID);
+        }
+        else if ((teamColor.equals("WHITE"))||(teamColor.equals("BLACK"))){
+            if(teamColor.equals("WHITE")){
+                if(myGame.whiteUsername()!= null){
+                    throw new DataAccessException.AlreadyTakenException();
+                }
+            }
+            else{
+                if (myGame.blackUsername() != null) {
+                    throw new DataAccessException.AlreadyTakenException();
+                }
+            }
+            myGameDAO.addPlayer(myUser.username(),teamColor,gameID);
+        }
+        else{
+            throw new DataAccessException.BadRequestException();
+        }
+
     }
 
     //returns a list of all games
-    public Collection<GameData> listGames(String authToken)throws DataAccessException{
-        myUserDAO.checkAuth(authToken);
-        return myGameDAO.getGames().values();
+    public Collection<GameList> listGames(String authToken)throws DataAccessException{
+        AuthData myAuthData = myUserDAO.checkAuth(authToken);
+        if(myAuthData == null){
+            throw new DataAccessException.UnauthorizedException();
+        }
+        Collection<GameData> myGames = myGameDAO.getGames().values();
+        Collection<GameList> myList = new ArrayList<GameList>();
+        for(GameData each:myGames){
+            myList.add(new GameList(each.gameID(),each.whiteUsername(), each.blackUsername(), each.gameName()));
+        }
+        return myList;
     }
 
     //clear all databases
