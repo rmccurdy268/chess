@@ -1,4 +1,4 @@
-package java.serviceTests;
+package serviceTests;
 
 import dataAccess.DataAccessException;
 import model.AuthData;
