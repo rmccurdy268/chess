@@ -39,7 +39,7 @@ public class Server {
 
     public void exceptionHandler(DataAccessException ex, Request req, Response res) {
         var body = new Gson().toJson(Map.of("message", ex.getMessage()));
-        res.status(ex.statusCode());
+        res.status(ex.StatusCode());
         res.body(body);
     }
     public void stop() {

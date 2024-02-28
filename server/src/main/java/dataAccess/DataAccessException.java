@@ -10,7 +10,7 @@ public class DataAccessException extends Exception{
         this.statusCode= statusCode;
     }
 
-    public int statusCode() {
+    public int StatusCode() {
         return statusCode;
     }
 
