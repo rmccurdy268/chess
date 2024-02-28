@@ -731,7 +731,6 @@ public class StandardAPITests {
         Assertions.assertEquals(expectedList, returnedList, "Returned Games list was incorrect");
     }
 
-
     @Test
     @Order(23)
     @DisplayName("Clear Test")
