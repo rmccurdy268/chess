@@ -33,10 +33,4 @@ public class DataAccessException extends Exception{
             super("Error: bad request", 400);
         }
     }
-    public static class DescriptiveException extends DataAccessException{
-
-        public DescriptiveException(String message){
-            super("Error: " + message , 500);
-        }
-    }
 }

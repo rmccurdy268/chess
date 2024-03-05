@@ -8,7 +8,6 @@ public class MemoryUserDAO implements UserDAO{
 
     private HashMap<String, UserData> userMap;
     private HashMap<String, AuthData> authMap;
-
     private Integer ogAuth = 0;
 
     public MemoryUserDAO(){
