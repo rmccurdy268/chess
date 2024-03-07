@@ -13,8 +13,8 @@ public class ChessService {
     private final UserDAO myUserDAO;
 
     public ChessService(){
-        myGameDAO = new MemoryGameDAO();
-        myUserDAO = new MemoryUserDAO();
+        myGameDAO = new MySQLGameDAO();
+        myUserDAO = new MySQLUserDAO();
     }
 
     //Registers a user for the first time

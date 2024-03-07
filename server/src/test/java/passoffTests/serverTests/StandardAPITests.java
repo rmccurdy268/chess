@@ -239,7 +239,7 @@ public class StandardAPITests {
     @DisplayName("Re-Register User")
     public void registerTwice() throws TestException {
         //create request trying to register existing user
-        TestModels.TestRegisterRequest registerRequest = new TestModels.TestRegisterRequest();
+         TestModels.TestRegisterRequest registerRequest = new TestModels.TestRegisterRequest();
         registerRequest.username = existingUser.username;
         registerRequest.password = existingUser.password;
         registerRequest.email = existingUser.email;

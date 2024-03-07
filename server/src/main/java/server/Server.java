@@ -15,7 +15,7 @@ public class Server {
     private final ChessService service;
 
     public Server(){
-        service = new ChessService();
+            service = new ChessService();
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
