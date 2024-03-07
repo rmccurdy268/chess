@@ -45,7 +45,7 @@ public class ChessService {
 
     //logs out an existing user
     public void logout(String authToken)throws DataAccessException{
-        if (myUserDAO.checkAuth(authToken)!=null){
+        if (myUserDAO.getAuthData(authToken)!=null){
             myUserDAO.deleteAuth(authToken);
         }
         else{
@@ -62,7 +62,7 @@ public class ChessService {
 
     //creates a new game
     public Integer createGame(String authToken, String gameName)throws DataAccessException{
-        if(myUserDAO.checkAuth(authToken) == null){
+        if(myUserDAO.getAuthData(authToken) == null){
             throw new DataAccessException.UnauthorizedException();
         }
         return myGameDAO.addGame(gameName);
@@ -70,7 +70,7 @@ public class ChessService {
 
     //joins game as existing user
     public void joinGame(String authToken, String teamColor, Integer gameID)throws DataAccessException{
-        AuthData myUser = myUserDAO.checkAuth(authToken);
+        AuthData myUser = myUserDAO.getAuthData(authToken);
         if (myUser == null){
             throw new DataAccessException.UnauthorizedException();
         }
@@ -102,7 +102,7 @@ public class ChessService {
 
     //returns a list of all games
     public Collection<GameList> listGames(String authToken)throws DataAccessException{
-        AuthData myAuthData = myUserDAO.checkAuth(authToken);
+        AuthData myAuthData = myUserDAO.getAuthData(authToken);
         if(myAuthData == null){
             throw new DataAccessException.UnauthorizedException();
         }

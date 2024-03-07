@@ -42,4 +42,36 @@ public class UserDAOTests {
         testUserDB.createUser("Rhodric", "myPassword", "myEmail");
         assertThrows(DataAccessException.class, ()->testUserDB.createUser("Rhodric", "myPassword", "myEmail"));
     }
+
+    @Test
+    void getUserData()throws DataAccessException{
+        testUserDB.createUser("Rhodric", "myPassword", "myEmail");
+        assertDoesNotThrow(()->testUserDB.getUser("Rhodric"));
+    }
+
+    @Test
+    void getNonexistentUserData()throws DataAccessException{
+        testUserDB.createUser("Rhodric", "myPassword", "myEmail");
+        assertThrows(DataAccessException.class,()->testUserDB.getUser("Krystyna"));
+    }
+
+    @Test
+    void checkCorrectCredentials()throws DataAccessException{
+        testUserDB.createUser("Rhodric", "myPassword", "myEmail");
+        assertDoesNotThrow(()->testUserDB.checkCredentials("Rhodric","myPassword"));
+    }
+
+    @Test
+    void checkIncorrectCredentials()throws DataAccessException{
+        testUserDB.createUser("Rhodric", "myPassword", "myEmail");
+        assertFalse(testUserDB.checkCredentials("Fredrick","myPassword"));
+        assertFalse(testUserDB.checkCredentials("Rhodric","notMyPassword"));
+    }
+
+    @Test
+    void deleteAuth()throws DataAccessException{
+        testUserDB.createUser("Rhodric","myPassword", "myEmail");
+        var auth = testUserDB.getAuthToken("Rhodric");
+        assertDoesNotThrow(()->testUserDB.deleteAuth(auth));
+    }
 }

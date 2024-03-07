@@ -59,12 +59,26 @@ public class MySQLUserDAO implements UserDAO{
         }
     }
 
-    public AuthData checkAuth(String auth) throws DataAccessException {
-        return null;
-    }
-
     public UserData getUser(String username) throws DataAccessException {
-        return null;
+        try (var conn = DatabaseManager.getConnection()) {
+            var authToken = getAuthToken(username);
+            try (var preparedStatement = conn.prepareStatement("SELECT username, password, email from userDB WHERE authToken = ?")) {
+                preparedStatement.setString(1, authToken);
+                try (var rs = preparedStatement.executeQuery()) {
+                    if (rs.next()) {
+                        var name = rs.getString("username");
+                        var password = rs.getString("password");
+                        var email = rs.getString("email");
+                        return new UserData(name, password, email);
+                    }
+                    else {
+                        throw new DataAccessException("Whoopsie", 500);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("whoopsie", 500);
+        }
     }
 
     public String getAuthToken(String username) throws DataAccessException {
@@ -101,11 +115,36 @@ public class MySQLUserDAO implements UserDAO{
     }
 
     public boolean checkCredentials(String username, String password) throws DataAccessException {
-        return false;
+        try (var conn = DatabaseManager.getConnection()) {
+            var authToken = getAuthToken(username);
+            try (var preparedStatement = conn.prepareStatement("SELECT password from userDB WHERE authToken = ?")) {
+                preparedStatement.setString(1, authToken);
+                try (var rs = preparedStatement.executeQuery()) {
+                    if (rs.next()) {
+                        var hashedPassword = rs.getString("password");
+                        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+                        return encoder.matches(password, hashedPassword);
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("whoopsie", 500);
+        }
     }
 
     public void deleteAuth(String auth) throws DataAccessException {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("DELETE from userDB WHERE authToken=?")) {
+                preparedStatement.setInt(1, Integer.parseInt(auth));
+                preparedStatement.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            throw new DataAccessException("whoops", 500);
+        }
     }
 
     public void clearUsers() throws DataAccessException {

@@ -39,10 +39,6 @@ public class MemoryUserDAO implements UserDAO{
         }
     }
 
-    public AuthData checkAuth(String auth) {
-        return authMap.get(auth);
-    }
-
     //getUser throws data exception when the user already exists
     public UserData getUser(String username){
         return userMap.get(username);

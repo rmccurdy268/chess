@@ -6,8 +6,6 @@ public interface UserDAO {
 
     String createAuth(String username) throws DataAccessException;
 
-    AuthData checkAuth(String auth) throws DataAccessException;
-
     UserData getUser(String username) throws DataAccessException;
 
     String getAuthToken(String username) throws DataAccessException;
