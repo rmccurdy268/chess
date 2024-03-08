@@ -7,6 +7,8 @@ import model.GameData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Objects;
 
 public class MySQLGameDAO implements GameDAO {
     private final Gson serializer = new Gson();
@@ -44,7 +46,6 @@ public class MySQLGameDAO implements GameDAO {
     }
 
 
-    //CHECK ME LATER
     public Integer addGame(String name) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement("INSERT INTO gamesDB (gameName, chessGameJson) values (?,?)", Statement.RETURN_GENERATED_KEYS)) {
@@ -92,11 +93,14 @@ public class MySQLGameDAO implements GameDAO {
 
     public void addPlayer(String userName, String teamColor, int gameID) throws DataAccessException {
         String statement = "";
-        switch(teamColor){
-            case "WHITE":
-                statement = "UPDATE gamesDB SET whiteUser=? WHERE gameID = ?";
-            case "BLACK":
-                statement = "UPDATE gamesDB SET blackUser=? WHERE gameID = ?";
+        if (Objects.equals(teamColor, "WHITE")) {
+            statement = "UPDATE gamesDB SET whiteUser=? WHERE gameID = ?";
+        }
+        else if (Objects.equals(teamColor, "BLACK")){
+            statement = "UPDATE gamesDB SET blackUser=? WHERE gameID = ?";
+        }
+        else{
+            throw new DataAccessException.BadRequestException();
         }
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement(statement)) {
@@ -111,8 +115,36 @@ public class MySQLGameDAO implements GameDAO {
 
     }
 
-    public void addObserver(String userName, int gameId) throws DataAccessException {
-
+    public void addObserver(String userName, int gameID) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT observersJSON FROM gamesDB WHERE gameID = ?";
+            HashSet<String> deserializedObservers = null;
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1,gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        var observersJSon = rs.getString("observersJSON");
+                        deserializedObservers = serializer.fromJson(observersJSon, HashSet.class);
+                    }
+                    else{
+                        throw new DataAccessException.BadRequestException();
+                    }
+                }
+            }
+            if (deserializedObservers==null){
+                deserializedObservers = new HashSet<String>();
+            }
+            deserializedObservers.add(userName);
+            var json = new Gson().toJson(deserializedObservers);
+            statement = "UPDATE gamesDB SET observersJSON=? WHERE gameID = ?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1,json);
+                ps.setInt(2,gameID);
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()), 500);
+        }
     }
 
     public void clearGames() throws DataAccessException {
@@ -133,11 +165,12 @@ public class MySQLGameDAO implements GameDAO {
               `whiteUser` TEXT DEFAULT NULL,
               `blackUser` TEXT DEFAULT NULL,
               `chessGameJson` TEXT NOT NULL,
-              `observersJson` TEXT DEFAULT NULL,
+              `observersJson` TEXT DEFAULT "",
               PRIMARY KEY (`gameID`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
+
 
 
     private void configureDatabase() throws DataAccessException {

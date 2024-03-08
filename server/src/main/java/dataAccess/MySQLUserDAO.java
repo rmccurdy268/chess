@@ -6,7 +6,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Objects;
 
 public class MySQLUserDAO implements UserDAO{
     public MySQLUserDAO(){
@@ -17,13 +16,12 @@ public class MySQLUserDAO implements UserDAO{
     }
 
     public void createUser(String username, String password, String email) throws DataAccessException {
-        createAuth(username);
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("UPDATE userDB SET password=?, email=? WHERE userName=?")) {
+            try (var preparedStatement = conn.prepareStatement("INSERT INTO userDB (userName,password,email) VALUES(?,?,?)")) {
                 String hash = hashPassword(password);
-                preparedStatement.setString(1, hash);
-                preparedStatement.setString(2, email);
-                preparedStatement.setString(3, username);
+                preparedStatement.setString(2, hash);
+                preparedStatement.setString(3, email);
+                preparedStatement.setString(1, username);
                 preparedStatement.executeUpdate();
             }
         }
@@ -32,29 +30,24 @@ public class MySQLUserDAO implements UserDAO{
         }
     }
 
-    public String hashPassword(String password){
+    private String hashPassword(String password){
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         return encoder.encode(password);
     }
 
     public String createAuth(String username) throws DataAccessException {
-        if(Objects.equals(getAuthToken(username), "0")) {
-            try (var conn = DatabaseManager.getConnection()) {
-                try (var preparedStatement = conn.prepareStatement("INSERT INTO userDB (username) values (?)", Statement.RETURN_GENERATED_KEYS)) {
-                    preparedStatement.setString(1, username);
-                    preparedStatement.executeUpdate();
-                    var resultSet = preparedStatement.getGeneratedKeys();
-                    var ID = 0;
-                    if (resultSet.next()) {
-                        ID = resultSet.getInt(1);
-                    }
-                    return String.valueOf(ID);
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("INSERT INTO authDB (username) values (?)", Statement.RETURN_GENERATED_KEYS)) {
+                preparedStatement.setString(1, username);
+                preparedStatement.executeUpdate();
+                var resultSet = preparedStatement.getGeneratedKeys();
+                var ID = 0;
+                while (resultSet.next()) {
+                    ID = resultSet.getInt(1);
                 }
-            } catch (SQLException e) {
-                throw new DataAccessException("Wrong", 500);
+                return String.valueOf(ID);
             }
-        }
-        else{
+        } catch (SQLException e) {
             throw new DataAccessException("Wrong", 500);
         }
     }
@@ -82,13 +75,15 @@ public class MySQLUserDAO implements UserDAO{
 
     public String getAuthToken(String username) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT authToken FROM userDB WHERE userName=?")) {
+            try (var preparedStatement = conn.prepareStatement("SELECT authToken FROM authDB WHERE userName=?")) {
                 preparedStatement.setString(1, username);
                 var resultSet = preparedStatement.executeQuery();
-
                 var ID = 0;
                 if (resultSet.next()) {
-                    ID = resultSet.getInt(1);
+                    ID = resultSet.getInt("authToken");
+                }
+                if (ID == 0){
+                    return null;
                 }
                 return String.valueOf(ID);
             }
@@ -100,17 +95,26 @@ public class MySQLUserDAO implements UserDAO{
 
     public AuthData getAuthData(String auth) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT authToken, userName from userDB WHERE authToken = ?")) {
+            try (var preparedStatement = conn.prepareStatement("SELECT userName from authDB WHERE authToken = ?")) {
+                try{
+                    int val = Integer.parseInt(auth);
+                }
+                catch(NumberFormatException ex){
+                    throw new DataAccessException.UnauthorizedException();
+                }
                 preparedStatement.setInt(1, Integer.parseInt(auth));
                 try (var rs = preparedStatement.executeQuery()) {
-                    var authToken = rs.getInt("authToken");
-                    var name = rs.getString("userName");
-                    return new AuthData(name, auth);
+                    while (rs.next()){
+                        var name = rs.getString(1);
+                        return new AuthData(name, auth);
+                    }
+
                 }
             }
         } catch (SQLException e) {
             return null;
         }
+        return null;
     }
 
     public boolean checkCredentials(String username, String password) throws DataAccessException {
@@ -135,7 +139,7 @@ public class MySQLUserDAO implements UserDAO{
 
     public void deleteAuth(String auth) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("DELETE from userDB WHERE authToken=?")) {
+            try (var preparedStatement = conn.prepareStatement("DELETE FROM authDB WHERE authToken=?")) {
                 preparedStatement.setInt(1, Integer.parseInt(auth));
                 preparedStatement.executeUpdate();
             }
@@ -156,12 +160,18 @@ public class MySQLUserDAO implements UserDAO{
     }
 
     public void clearAuth() throws DataAccessException {
-        clearUsers();
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("TRUNCATE authDB")) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("no working",500);
+        }
     }
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS  userDB (
-              `authToken` int NOT NULL AUTO_INCREMENT,
+              `id` int NOT NULL AUTO_INCREMENT,
               `userName` varchar(256) NOT NULL,
               `password` varchar(256) DEFAULT NULL,
               `email` varchar(256) DEFAULT NULL,
@@ -171,12 +181,27 @@ public class MySQLUserDAO implements UserDAO{
             """
     };
 
+    private final String[] authCreateStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS  authDB (
+              `authToken` int NOT NULL AUTO_INCREMENT,
+              `userName` varchar(256) NOT NULL,
+              PRIMARY KEY (`authToken`),
+              INDEX(`userName`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+    };
 
     private void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+            for (var statement : authCreateStatements){
+                try (var preparedStatement = conn.prepareStatement(statement)){
                     preparedStatement.executeUpdate();
                 }
             }

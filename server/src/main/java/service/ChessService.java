@@ -22,7 +22,7 @@ public class ChessService {
         UserData myUserData = myUserDAO.getUser(username);
         if(myUserData == null){
             myUserDAO.createUser(username, password, email);
-            String myAuth = myUserDAO.getAuthToken(username);
+            String myAuth = myUserDAO.createAuth(username);
             return myUserDAO.getAuthData(myAuth);
         }
         else{
@@ -36,10 +36,7 @@ public class ChessService {
         if (!exists) {
             throw new DataAccessException.UnauthorizedException();
         }
-        UserData myUserData = myUserDAO.getUser(username);
-        String myAuth = myUserDAO.getAuthToken(username);
-
-        myAuth = myUserDAO.createAuth(username);
+        String myAuth = myUserDAO.createAuth(username);
         return myUserDAO.getAuthData(myAuth);
     }
 
