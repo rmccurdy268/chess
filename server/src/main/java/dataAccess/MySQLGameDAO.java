@@ -23,11 +23,10 @@ public class MySQLGameDAO implements GameDAO {
     public HashMap<Integer, GameData> getGames() throws DataAccessException {
         var result = new HashMap<Integer, GameData>();
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, whiteUser, blackUser, gameName, chessGameJson FROM pet";
+            var statement = "SELECT gameID, whiteUser, blackUser, gameName, chessGameJson FROM gamesDB";
             try (var ps = conn.prepareStatement(statement)) {
                 try (var rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        GameData myData = null;
                         var gameID = rs.getInt("gameID");
                         var gameName = rs.getString("gameName");
                         var whiteUser = rs.getString("whiteUser");
@@ -68,10 +67,47 @@ public class MySQLGameDAO implements GameDAO {
     }
 
     public GameData getGame(int gameID) throws DataAccessException {
-        return null;
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT whiteUser, blackUser, gameName, chessGameJson FROM gamesDB WHERE gameID = ?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1,gameID);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        var gameName = rs.getString("gameName");
+                        var whiteUser = rs.getString("whiteUser");
+                        var blackUser = rs.getString("blackUser");
+                        var chessGameJson = rs.getString("chessGameJson");
+                        var deserializedGame = serializer.fromJson(chessGameJson, ChessGame.class);
+                        return new GameData(gameID, whiteUser, blackUser, gameName, deserializedGame);
+                    }
+                    else{
+                        return null;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()), 500);
+        }
     }
 
     public void addPlayer(String userName, String teamColor, int gameID) throws DataAccessException {
+        String statement = "";
+        switch(teamColor){
+            case "WHITE":
+                statement = "UPDATE gamesDB SET whiteUser=? WHERE gameID = ?";
+            case "BLACK":
+                statement = "UPDATE gamesDB SET blackUser=? WHERE gameID = ?";
+        }
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setString(1,userName);
+                preparedStatement.setInt(2, gameID);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("weird error in authorization", 500);
+        }
+
 
     }
 

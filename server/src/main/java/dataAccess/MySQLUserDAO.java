@@ -61,9 +61,8 @@ public class MySQLUserDAO implements UserDAO{
 
     public UserData getUser(String username) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var authToken = getAuthToken(username);
-            try (var preparedStatement = conn.prepareStatement("SELECT username, password, email from userDB WHERE authToken = ?")) {
-                preparedStatement.setString(1, authToken);
+            try (var preparedStatement = conn.prepareStatement("SELECT username, password, email from userDB WHERE userName = ?")) {
+                preparedStatement.setString(1, username);
                 try (var rs = preparedStatement.executeQuery()) {
                     if (rs.next()) {
                         var name = rs.getString("username");
@@ -72,12 +71,12 @@ public class MySQLUserDAO implements UserDAO{
                         return new UserData(name, password, email);
                     }
                     else {
-                        throw new DataAccessException("Whoopsie", 500);
+                        return null;
                     }
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("whoopsie", 500);
+            return null;
         }
     }
 
@@ -95,7 +94,7 @@ public class MySQLUserDAO implements UserDAO{
             }
         }
         catch (SQLException e) {
-            throw new DataAccessException("Wrong", 500);
+            return null;
         }
     }
 
@@ -110,15 +109,14 @@ public class MySQLUserDAO implements UserDAO{
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("whoopsie", 500);
+            return null;
         }
     }
 
     public boolean checkCredentials(String username, String password) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var authToken = getAuthToken(username);
-            try (var preparedStatement = conn.prepareStatement("SELECT password from userDB WHERE authToken = ?")) {
-                preparedStatement.setString(1, authToken);
+            try (var preparedStatement = conn.prepareStatement("SELECT password from userDB WHERE userName = ?")) {
+                preparedStatement.setString(1, username);
                 try (var rs = preparedStatement.executeQuery()) {
                     if (rs.next()) {
                         var hashedPassword = rs.getString("password");
@@ -131,7 +129,7 @@ public class MySQLUserDAO implements UserDAO{
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("whoopsie", 500);
+            throw new DataAccessException("weird error in authorization", 500);
         }
     }
 

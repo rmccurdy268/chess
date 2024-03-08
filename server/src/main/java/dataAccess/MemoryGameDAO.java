@@ -32,9 +32,8 @@ public class MemoryGameDAO implements GameDAO{
         return gameMap.get(gameID);
     }
 
-    //write a test to check that these parameters are valid
 
-    //PLEASE REFACTOR ME
+
     public void addPlayer(String userName, String teamColor, int gameID) {
         if(Objects.equals(teamColor, "WHITE")){
             GameData myData = new GameData(gameID, userName, gameMap.get(gameID).blackUsername(), gameMap.get(gameID).gameName(),gameMap.get(gameID).implementation());

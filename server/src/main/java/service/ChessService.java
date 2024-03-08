@@ -22,7 +22,7 @@ public class ChessService {
         UserData myUserData = myUserDAO.getUser(username);
         if(myUserData == null){
             myUserDAO.createUser(username, password, email);
-            String myAuth = myUserDAO.createAuth(username);
+            String myAuth = myUserDAO.getAuthToken(username);
             return myUserDAO.getAuthData(myAuth);
         }
         else{
