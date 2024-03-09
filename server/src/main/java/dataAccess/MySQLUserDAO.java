@@ -12,7 +12,9 @@ public class MySQLUserDAO implements UserDAO{
         try{
             configureDatabase();
         }
-        catch(DataAccessException ignored){}
+        catch(DataAccessException ex){
+            System.out.print("couldnt configure userDAO");
+        }
     }
 
     public void createUser(String username, String password, String email) throws DataAccessException {
@@ -175,7 +177,7 @@ public class MySQLUserDAO implements UserDAO{
               `userName` varchar(256) NOT NULL,
               `password` varchar(256) DEFAULT NULL,
               `email` varchar(256) DEFAULT NULL,
-              PRIMARY KEY (`authToken`),
+              PRIMARY KEY (`id`),
               INDEX(`userName`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
