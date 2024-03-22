@@ -1,4 +1,4 @@
-package client;
+package ui;
 
 import exception.ResponseException;
 import server.ServerFacade;
@@ -74,17 +74,20 @@ public class ChessClient {
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
-                    - signIn <yourname>
+                    - login <USERNAME> <PASSWORD>
+                    - register <USERNAME> <PASSWORD> <EMAIL>
                     - quit
+                    - help
                     """;
         }
         return """
+                - create <NAME>
                 - list
-                - adopt <pet id>
-                - rescue <name> <CAT|DOG|FROG|FISH>
-                - adoptAll
-                - signOut
+                - join <id> [WHITE | BLACK | <empty>]
+                - observe <id>
+                - logout
                 - quit
+                - help
                 """;
     }
     private void assertSignedIn() throws exception.ResponseException {
