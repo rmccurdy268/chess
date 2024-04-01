@@ -4,6 +4,7 @@ import dataAccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import server.GameList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,8 +79,8 @@ public class ChessService {
         if((teamColor == null)||(teamColor.isEmpty())||(teamColor.equals("empty"))){
             myGameDAO.addObserver(myUser.username(),gameID);
         }
-        else if ((teamColor.equals("WHITE"))||(teamColor.equals("BLACK"))){
-            if(teamColor.equals("WHITE")){
+        else if ((teamColor.equals("white"))||(teamColor.equals("black"))){
+            if(teamColor.equals("white")){
                 if(myGame.whiteUsername()!= null){
                     throw new DataAccessException.AlreadyTakenException();
                 }

@@ -1,6 +1,8 @@
 package ui;
 
 import exception.ResponseException;
+import model.UserData;
+import server.LoginInfo;
 import server.ServerFacade;
 
 import java.util.Arrays;
@@ -25,10 +27,10 @@ public class ChessClient {
                 case "login" -> login(params);
                 case "register" -> register(params);
                 case "logout" -> logout(params);
-                case "creategame" -> createGame(params);
-                case "listgames" -> listGames();
-                case "joingame" -> joinGame();
-                case "joinObserver" -> joinObserver(params);
+                case "create" -> createGame(params);
+                case "list" -> listGames();
+                case "join" -> joinGame(params);
+                case "observe" -> joinObserver(params);
 
                 default -> help();
             };
@@ -37,37 +39,72 @@ public class ChessClient {
         }
     }
 
-    private String login(String[] params){
-        return null;
+    private String login(String[] params)throws ResponseException{
+        if (params.length >= 2) {
+            state = State.SIGNEDIN;
+            var name = params[0];
+            var password = params[1];
+            var userData = new LoginInfo(name, password);
+            var userToken = server.login(userData);
+            return String.format("Logged in successfully. %d is your authorization token.", userToken);
+        }
+        throw new ResponseException(400, "Expected: <name> <password>");
     }
 
-    private String register(String[] params) {
-        return null;
+    private String register(String[] params)throws ResponseException{
+        if (params.length >= 3) {
+            state = State.SIGNEDIN;
+            var name = params[0];
+            var password = params[1];
+            var email = params[2];
+            var userData = new UserData(name, password, email);
+            int userToken = server.addUser(userData);
+            return String.format("Registered successfully. %d is your authorization token.", userToken);
+        }
+        throw new ResponseException(400, "Expected: <username> <password> <email>");
     }
 
     private String logout(String[] params) throws ResponseException{
         assertSignedIn();
-        return null;
+        server.logout();
+        state = State.SIGNEDOUT;
+        return "Successfully logged out";
     }
 
     private String createGame(String[] params) throws ResponseException{
         assertSignedIn();
-        return null;
+        if (params.length == 1){
+            var gameName = params[0];
+            int gameNum = server.createGame(gameName);
+            return String.format("Game created successfully. Game ID is %d.", gameNum);
+        }
+        throw new ResponseException(400, "Expected: <name>");
     }
 
     private String listGames() throws ResponseException{
         assertSignedIn();
-        return null;
+        return server.listGames();
     }
 
-    private String joinGame() throws ResponseException{
+    private String joinGame(String[] params) throws ResponseException{
         assertSignedIn();
-        return null;
+        if (params.length == 2){
+            int gameID = Integer.parseInt(params [0]);
+            String color = params[1];
+            server.joinAsPlayer(gameID, color);
+            return String.format("Successfully joined as %s player", color);
+        }
+        throw new ResponseException(400, "Expected: <id> [WHITE | BLACK | <empty>]");
     }
 
     private String joinObserver(String[] params)throws ResponseException{
         assertSignedIn();
-        return null;
+        if (params.length == 1){
+            int gameID = Integer.parseInt(params[0]);
+            server.joinAsObserver(gameID);
+            return "Joined game as observer succesfully";
+        }
+        throw new ResponseException(400, "Expected: <id>");
     }
 
 
