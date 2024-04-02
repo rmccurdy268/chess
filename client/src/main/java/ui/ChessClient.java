@@ -92,6 +92,7 @@ public class ChessClient {
             int gameID = Integer.parseInt(params [0]);
             String color = params[1];
             server.joinAsPlayer(gameID, color);
+            renderBoard();
             return String.format("Successfully joined as %s player", color);
         }
         throw new ResponseException(400, "Expected: <id> [WHITE | BLACK | <empty>]");
@@ -102,6 +103,7 @@ public class ChessClient {
         if (params.length == 1){
             int gameID = Integer.parseInt(params[0]);
             server.joinAsObserver(gameID);
+            renderBoard();
             return "Joined game as observer succesfully";
         }
         throw new ResponseException(400, "Expected: <id>");
@@ -127,6 +129,11 @@ public class ChessClient {
                 - help
                 """;
     }
+
+    public void renderBoard(){
+        DrawBoard.drawBoard();
+    }
+
     private void assertSignedIn() throws exception.ResponseException {
         if (state == State.SIGNEDOUT) {
             throw new exception.ResponseException(400, "You must sign in");
