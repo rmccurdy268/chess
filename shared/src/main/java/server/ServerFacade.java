@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
 
@@ -20,51 +21,51 @@ public class ServerFacade {
         serverUrl = url;
 
     }
-    public int addUser(UserData data)throws exception.ResponseException {
+    public int addUser(UserData data)throws ResponseException {
         var path = "/user";
         AuthData myAuth = this.makeRequest("POST", path, data, AuthData.class, false);
         auth = Integer.parseInt(myAuth.authToken());
         return auth;
     }
 
-    public int login(LoginInfo data)throws exception.ResponseException {
+    public int login(LoginInfo data)throws ResponseException {
         var path = "/session";
         AuthData myAuth = this.makeRequest("POST", path, data, AuthData.class, false);
         auth = Integer.parseInt(myAuth.authToken());
         return auth;
     }
 
-    public void logout()throws exception.ResponseException{
+    public void logout()throws ResponseException{
         var path = "/session";
         this.makeRequest("DELETE", path,null,null, true);
     }
 
-    public int createGame(String gameName)throws exception.ResponseException{
+    public int createGame(String gameName)throws ResponseException{
         var path = "/game";
         GameWithName mygame = new GameWithName(gameName);
         GameWithID myID = this.makeRequest("POST", path, mygame, GameWithID.class, true);
         return myID.gameID();
     }
 
-    public String listGames() throws exception.ResponseException{
+    public String listGames() throws ResponseException{
         var path = "/game";
         ListArray games = this.makeRequest("GET", path, null, ListArray.class,true);
         return games.makeString();
     }
 
-    public void joinAsPlayer(int gameID, String color) throws exception.ResponseException {
+    public void joinAsPlayer(int gameID, String color) throws ResponseException {
         var path = "/game";
         JoinTeamInput input = new JoinTeamInput(color, gameID);
         this.makeRequest("PUT", path, input, null, true);
     }
 
-    public void joinAsObserver(int gameID) throws exception.ResponseException{
+    public void joinAsObserver(int gameID) throws ResponseException{
         var path = "/game";
         JoinTeamInput input = new JoinTeamInput(null, gameID);
         this.makeRequest("PUT", path, input, null, true);
     }
 
-    public void clear() throws exception.ResponseException {
+    public void clear() throws ResponseException {
         var path = "/db";
         this.makeRequest("DELETE", path, null, null, false);
     }

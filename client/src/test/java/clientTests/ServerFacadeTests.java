@@ -1,5 +1,6 @@
 package clientTests;
 
+import exception.ResponseException;
 import model.UserData;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,7 +27,7 @@ public class ServerFacadeTests {
     }
 
     @BeforeEach
-    public void clearDatabase() throws Exception {
+    public void clearDatabase() throws ResponseException {
         facade.clear();
     }
 
@@ -38,7 +39,7 @@ public class ServerFacadeTests {
 
     //Positive register test
     @Test
-    public void registerTest() throws Exception{
+    public void registerTest() throws ResponseException{
         UserData user = new UserData("player1", "password", "p1@email.com");
         int myAuth = facade.addUser(user);
         assertTrue(myAuth < 10);
@@ -52,13 +53,13 @@ public class ServerFacadeTests {
             int myAuth = facade.addUser(user);
             int secondAuth = facade.addUser(user);
         }
-        catch(Exception e){
+        catch(ResponseException e){
             assertTrue(true);
         }
     }
 
     @Test
-    public void successfulLogin()throws Exception{
+    public void successfulLogin()throws ResponseException{
         UserData user = new UserData("player1", "password", "p1@email.com");
         int myAuth = facade.addUser(user);
         assertEquals(1, myAuth);
@@ -76,12 +77,12 @@ public class ServerFacadeTests {
             LoginInfo myInfo = new LoginInfo(user.username(), "differentPassword");
             myAuth = facade.login(myInfo);
         }
-        catch(Exception e){
+        catch(ResponseException e){
             assertTrue(true);
         }
     }
     @Test
-    public void successfulLogout()throws Exception{
+    public void successfulLogout()throws ResponseException{
         UserData user = new UserData("player1", "password", "p1@email.com");
         int myAuth = facade.addUser(user);
         assertEquals(1, myAuth);
@@ -90,11 +91,11 @@ public class ServerFacadeTests {
 
     @Test
     public void unsuccessfulLogout(){
-        assertThrows(exception.ResponseException.class, ()->facade.logout());
+        assertThrows(ResponseException.class, ()->facade.logout());
     }
 
     @Test
-    public void successfulGameCreation()throws Exception{
+    public void successfulGameCreation()throws ResponseException{
         UserData user = new UserData("player1", "password", "p1@email.com");
         int myAuth = facade.addUser(user);
         assertEquals(1,facade.createGame("myNewGame"));
@@ -102,11 +103,11 @@ public class ServerFacadeTests {
 
     @Test
     public void createGameNotLoggedIn(){
-        assertThrows(exception.ResponseException.class, ()->facade.createGame("newGame"));
+        assertThrows(ResponseException.class, ()->facade.createGame("newGame"));
     }
 
     @Test
-    public void listGamesSuccess()throws Exception{
+    public void listGamesSuccess()throws ResponseException{
         UserData user = new UserData("player1", "password", "p1@email.com");
         int myAuth = facade.addUser(user);
         int myGame = facade.createGame("myNewGame");
@@ -115,11 +116,11 @@ public class ServerFacadeTests {
 
     @Test
     public void listGamesNotLoggedIn(){
-        assertThrows(exception.ResponseException.class, ()->facade.listGames());
+        assertThrows(ResponseException.class, ()->facade.listGames());
     }
 
     @Test
-    public void joinAsPlayerSuccess()throws Exception{
+    public void joinAsPlayerSuccess()throws ResponseException{
         UserData user = new UserData("player1", "password", "p1@email.com");
         int myAuth = facade.addUser(user);
         assertEquals(1,facade.createGame("myNewGame"));
@@ -127,7 +128,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void joinAsPlayerOccupied()throws Exception{
+    public void joinAsPlayerOccupied()throws ResponseException{
         UserData user = new UserData("player1", "password", "p1@email.com");
         facade.addUser(user);
         assertEquals(1,facade.createGame("myNewGame"));
@@ -135,11 +136,11 @@ public class ServerFacadeTests {
         facade.logout();
         UserData newUser = new UserData("player2", "password", "p1@email.com");
         facade.addUser(newUser);
-        assertThrows(exception.ResponseException.class, ()->facade.joinAsPlayer(1,"white"));
+        assertThrows(ResponseException.class, ()->facade.joinAsPlayer(1,"white"));
     }
 
     @Test
-    public void joinAsObserverSuccess()throws Exception{
+    public void joinAsObserverSuccess()throws ResponseException{
         UserData user = new UserData("player1", "password", "p1@email.com");
         int myAuth = facade.addUser(user);
         assertEquals(1,facade.createGame("myNewGame"));
@@ -147,15 +148,15 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void joinObserverGameDoesNotExist()throws Exception{
+    public void joinObserverGameDoesNotExist()throws ResponseException{
         UserData user = new UserData("player1", "password", "p1@email.com");
         int myAuth = facade.addUser(user);
         assertEquals(1,facade.createGame("myNewGame"));
-        assertThrows(exception.ResponseException.class, ()->facade.joinAsObserver(2));
+        assertThrows(ResponseException.class, ()->facade.joinAsObserver(2));
     }
 
     @Test
-    public void testClear()throws Exception{
+    public void testClear()throws ResponseException{
         UserData user = new UserData("player1", "password", "p1@email.com");
         int myAuth = facade.addUser(user);
         int gameID = facade.createGame("newGame");
