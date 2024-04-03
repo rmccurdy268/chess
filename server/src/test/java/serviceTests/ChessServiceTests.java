@@ -4,8 +4,8 @@ import dataAccess.DataAccessException;
 import model.AuthData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import service.ChessService;
 import server.GameList;
+import service.ChessService;
 
 import java.util.ArrayList;
 import java.util.Collection;

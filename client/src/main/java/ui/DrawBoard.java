@@ -27,6 +27,7 @@ public class DrawBoard {
 
     private static final char SINGLE_SPACE = ' ';
 
+
     public static enum direction{FORWARD, BACKWARD};
 
 
@@ -34,11 +35,12 @@ public class DrawBoard {
         ChessBoard myBoard = new ChessBoard();
         myBoard.resetBoard();
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-        printForwardBoard(myBoard, out);
-        printBackwardBoard(myBoard, out);
+        printForwardBoard(myBoard, out, direction.FORWARD);
+        out.println();
+        printBackwardBoard(myBoard, out, direction.BACKWARD);
     }
 
-    public static void printBackwardBoard(ChessBoard board, PrintStream out){
+    /*public static void printBackwardBoard(ChessBoard board, PrintStream out){
         setHeader(out, direction.FORWARD);
         for(int i = 1; i <= BOARD_LENGTH; i++){
             setHeaderColors(out);
@@ -124,9 +126,140 @@ public class DrawBoard {
         }
         setHeader(out, direction.FORWARD);
     }
+     */
 
-    public static void printForwardBoard(ChessBoard board, PrintStream out){
 
+
+    public static void printForwardBoard(ChessBoard board, PrintStream out, direction boardOrientation){
+        setHeader(out, direction.BACKWARD);
+        makeMainBoard(board, out, boardOrientation);
+        setHeader(out, direction.BACKWARD);
+    }
+
+    public static void printBackwardBoard(ChessBoard board, PrintStream out, direction boardOrientation){
+        setHeader(out, direction.FORWARD);
+        makeMainBoard(board, out, boardOrientation);
+        setHeader(out, direction.FORWARD);
+    }
+
+    private static void makeMainBoard(ChessBoard board, PrintStream out, direction boardOrientation) {
+        String colHeader = "";
+        if (boardOrientation == direction.FORWARD){
+            colHeader = BOTTOM_UP_COL_HEADER;
+            for (int i = BOARD_LENGTH; i >= 1; i--){
+                setHeaderColors(out);
+                out.print(SINGLE_SPACE);
+                out.print(colHeader.charAt(i));
+                out.print(SINGLE_SPACE);
+                for (int j = BOARD_WIDTH; j>= 1; j--){
+                    setBgColor(i,j,out);
+                    ChessPiece currentPiece = board.getPiece(new ChessPosition(i,j));
+                    if (currentPiece != null){
+                        setPiece(currentPiece,out);
+                    }
+                    else{
+                        out.print(EMPTY.repeat(1));
+                    }
+                }
+                setHeaderColors(out);
+                out.print(SINGLE_SPACE);
+                out.print(colHeader.charAt(i));
+                out.print(SINGLE_SPACE);
+                out.println();
+            }
+
+        }
+        else{
+            colHeader = BOTTOM_UP_COL_HEADER;
+            for (int i = 1; i <= BOARD_LENGTH; i++){
+                setHeaderColors(out);
+                out.print(SINGLE_SPACE);
+                out.print(colHeader.charAt(i));
+                out.print(SINGLE_SPACE);
+                for (int j = 1; j<= BOARD_WIDTH; j++){
+                    setBgColor(i,j,out);
+                    ChessPiece currentPiece = board.getPiece(new ChessPosition(i,j));
+                    if (currentPiece != null){
+                        setPiece(currentPiece,out);
+                    }
+                    else{
+                        out.print(EMPTY.repeat(1));
+                    }
+                }
+                setHeaderColors(out);
+                out.print(SINGLE_SPACE);
+                out.print(colHeader.charAt(i));
+                out.print(SINGLE_SPACE);
+                out.println();
+            }
+        }
+
+    }
+    public static void setBgColor(int row, int col, PrintStream out){
+        if (row % 2 == col % 2){
+            setBlackSpace(out);
+        }
+        else{
+            setWhiteSpace(out);
+        }
+    }
+
+    public static void setPiece(ChessPiece piece, PrintStream out){
+        var pieceColor = piece.getTeamColor();
+        switch(pieceColor){
+            case BLACK -> setBlackPiece(out);
+            case WHITE -> setWhitePiece(out);
+        }
+        switch(piece.getPieceType()){
+            case KING -> setKing(pieceColor,out);
+            case QUEEN -> setQueen(pieceColor,out);
+            case ROOK -> setRook(pieceColor,out);
+            case BISHOP -> setBishop(pieceColor,out);
+            case KNIGHT -> setKnight(pieceColor,out);
+            case PAWN -> setPawn(pieceColor,out);
+        }
+    }
+
+    public static void setKing(ChessGame.TeamColor color, PrintStream out){
+        switch(color){
+            case WHITE -> out.print(WHITE_KING);
+            case BLACK -> out.print(BLACK_KING);
+        }
+    }
+
+    public static void setQueen(ChessGame.TeamColor color, PrintStream out){
+        switch(color){
+            case WHITE -> out.print(WHITE_QUEEN);
+            case BLACK -> out.print(BLACK_QUEEN);
+        }
+    }
+
+    public static void setBishop(ChessGame.TeamColor color, PrintStream out){
+        switch(color){
+            case WHITE -> out.print(WHITE_BISHOP);
+            case BLACK -> out.print(BLACK_BISHOP);
+        }
+    }
+
+    public static void setKnight(ChessGame.TeamColor color, PrintStream out){
+        switch(color){
+            case WHITE -> out.print(WHITE_KNIGHT);
+            case BLACK -> out.print(BLACK_KNIGHT);
+        }
+    }
+
+    public static void setRook(ChessGame.TeamColor color, PrintStream out){
+        switch(color){
+            case WHITE -> out.print(WHITE_ROOK);
+            case BLACK -> out.print(BLACK_ROOK);
+        }
+    }
+
+    public static void setPawn(ChessGame.TeamColor color, PrintStream out){
+        switch(color){
+            case WHITE -> out.print(WHITE_PAWN);
+            case BLACK -> out.print(BLACK_PAWN);
+        }
     }
 
     public static void setHeader(PrintStream out, direction direction){
