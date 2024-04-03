@@ -64,6 +64,15 @@ public class ServerFacade {
         this.makeRequest("PUT", path, input, null, true);
     }
 
+    public void clear() throws exception.ResponseException {
+        var path = "/db";
+        this.makeRequest("DELETE", path, null, null, false);
+    }
+
+
+
+
+    //HTTP FUNCTIONS
 
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, boolean needsAuth) throws exception.ResponseException {
