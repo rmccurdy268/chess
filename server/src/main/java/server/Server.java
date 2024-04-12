@@ -19,6 +19,9 @@ public class Server {
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
+        Spark.webSocket("/connect", Server.class);
+
+        Spark.get("/echo/:msg", (req, res) -> "HTTP response: " + req.params(":msg"));
 
         Spark.staticFiles.location("web");
         Spark.init();

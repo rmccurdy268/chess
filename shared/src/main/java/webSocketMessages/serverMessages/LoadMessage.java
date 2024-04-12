@@ -8,7 +8,7 @@ public class LoadMessage extends ServerMessage{
 
     public LoadMessage(ServerMessageType type) {
         super(type);
-        //set board to be c8rrent server boardmyBoard =
+        myBoard =
     }
 
     public String toString() {

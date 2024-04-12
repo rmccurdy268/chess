@@ -4,6 +4,8 @@ import exception.ResponseException;
 import model.UserData;
 import server.LoginInfo;
 import server.ServerFacade;
+import ui.websocket.NotificationHandler;
+import ui.websocket.WebSocketFacade;
 
 import java.util.Arrays;
 
@@ -12,10 +14,13 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverURL;
     private State state = State.SIGNEDOUT;
-
-    public ChessClient(String serverURL){
+    private WebSocketFacade ws;
+    private int authToken;
+    private final NotificationHandler notificationHandler;
+    public ChessClient(String serverURL, NotificationHandler handler){
         server = new ServerFacade(serverURL);
         this.serverURL = serverURL;
+        this.notificationHandler = handler;
     }
     public String eval(String input){
         try {
@@ -45,8 +50,9 @@ public class ChessClient {
             var name = params[0];
             var password = params[1];
             var userData = new LoginInfo(name, password);
-            var userToken = server.login(userData);
-            return String.format("Logged in successfully. %d is your authorization token.", userToken);
+            authToken = server.login(userData);
+
+            return String.format("Logged in successfully. %d is your authorization token.", authToken);
         }
         throw new ResponseException(400, "Expected: <name> <password>");
     }
@@ -58,8 +64,8 @@ public class ChessClient {
             var password = params[1];
             var email = params[2];
             var userData = new UserData(name, password, email);
-            int userToken = server.addUser(userData);
-            return String.format("Registered successfully. %d is your authorization token.", userToken);
+            authToken = server.addUser(userData);
+            return String.format("Registered successfully. %d is your authorization token.", authToken);
         }
         throw new ResponseException(400, "Expected: <username> <password> <email>");
     }
@@ -68,6 +74,7 @@ public class ChessClient {
         assertSignedIn();
         server.logout();
         state = State.SIGNEDOUT;
+        authToken = 0;
         return "Successfully logged out";
     }
 
@@ -89,10 +96,13 @@ public class ChessClient {
     private String joinGame(String[] params) throws ResponseException{
         assertSignedIn();
         if (params.length == 2){
+            state = State.SIGNEDIN;
             int gameID = Integer.parseInt(params [0]);
             String color = params[1];
-            server.joinAsPlayer(gameID, color);
-            renderBoard();
+            visitorName = String.join("-", params);
+            ws = new WebSocketFacade(serverURL, notificationHandler);
+            ws.joinPlayer(gameID, color,authToken);
+            //renderBoard();
             return String.format("Successfully joined as %s player", color);
         }
         throw new ResponseException(400, "Expected: <id> [WHITE | BLACK | <empty>]");
