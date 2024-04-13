@@ -63,6 +63,10 @@ public class ServerFacade {
         return games.makeString();
     }
 
+    public void leave(int gameId, String color)throws ResponseException{
+        ws.leave(gameId,color,auth);
+    }
+
     public void joinAsPlayer(int gameID, String color) throws ResponseException {
         var path = "/game";
         JoinTeamInput input = new JoinTeamInput(color, gameID);

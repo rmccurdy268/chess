@@ -113,8 +113,28 @@ public class MySQLGameDAO implements GameDAO {
         } catch (SQLException e) {
             throw new DataAccessException("weird error in authorization", 500);
         }
+    }
 
-
+    //NEW FUNCTION FOR LEAVE/RESIGN
+    public void deletePlayer(String teamColor, int gameID) throws DataAccessException{
+        String statement = "";
+        if (Objects.equals(teamColor, "white")) {
+            statement = "UPDATE gamesDB SET whiteUser=null WHERE gameID = ?";
+        }
+        else if (Objects.equals(teamColor, "black")){
+            statement = "UPDATE gamesDB SET blackUser=null WHERE gameID = ?";
+        }
+        else{
+            throw new DataAccessException.BadRequestException();
+        }
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.setInt(1, gameID);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("weird error in authorization", 500);
+        }
     }
 
     public void addObserver(String userName, int gameID) throws DataAccessException {

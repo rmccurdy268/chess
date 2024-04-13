@@ -53,4 +53,6 @@ public class MemoryGameDAO implements GameDAO{
         gameMap.clear();
         observerMap.clear();
     }
+
+    public void deletePlayer(String color, int gameId){}
 }

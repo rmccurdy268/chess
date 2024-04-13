@@ -22,6 +22,7 @@ public class ChessClient {
     private loadHandler loader;
     private String currentColor;
     private ChessBoard currentBoard;
+    private int currentGameId;
 
     private final NotificationHandler notificationHandler;
     public ChessClient(String serverURL, NotificationHandler handler){
@@ -60,6 +61,7 @@ public class ChessClient {
                 case "list" -> listGames();
                 case "join" -> joinGame(params);
                 case "observe" -> joinObserver(params);
+                case "leave" -> leaveGame();
 
                 default -> help();
             };
@@ -130,6 +132,8 @@ public class ChessClient {
             String color = params[1];
             server.joinAsPlayer(gameID, color);
             currentColor = color;
+            currentGameId = gameID;
+            state = State.INGAME;
             return String.format("Successfully joined as %s player", color);
         }
         throw new ResponseException(400, "Expected: <id> [WHITE | BLACK | <empty>]");
@@ -146,6 +150,12 @@ public class ChessClient {
         throw new ResponseException(400, "Expected: <id>");
     }
 
+    private String leaveGame()throws ResponseException{
+        assertInGame();
+        server.leave(currentGameId, currentColor);
+        return "You left the game.";
+    }
+
 
     public String help() {
         if (state == State.SIGNEDOUT) {
@@ -153,6 +163,16 @@ public class ChessClient {
                     - login <USERNAME> <PASSWORD>
                     - register <USERNAME> <PASSWORD> <EMAIL>
                     - quit
+                    - help
+                    """;
+        }
+        else if (state == State.INGAME){
+            return """
+                    - makeMove <currentPosition> <desiredPosition>
+                    - showMoves <position>
+                    - redrawBoard
+                    - resign
+                    - leave
                     - help
                     """;
         }
@@ -174,6 +194,12 @@ public class ChessClient {
     private void assertSignedIn() throws exception.ResponseException {
         if (state == State.SIGNEDOUT) {
             throw new exception.ResponseException(400, "You must sign in");
+        }
+    }
+
+    private void assertInGame() throws exception.ResponseException {
+        if (state != State.INGAME) {
+            throw new exception.ResponseException(400, "You must join a game to use this command");
         }
     }
 }

@@ -2,6 +2,7 @@ package server.websocket;
 
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
+import model.AuthData;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -22,7 +23,7 @@ public class WebSocketHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
 
-    public WebSocketHandler(ChessService service){
+    public WebSocketHandler(ChessService service) {
         this.service = service;
     }
 
@@ -39,19 +40,21 @@ public class WebSocketHandler {
                 connections.add(command.getAuthString(), session);
             }
             case MAKE_MOVE -> command = new Gson().fromJson(message, MakeMoveCommand.class);
-            case LEAVE -> command = new Gson().fromJson(message, LeaveCommand.class);
+            case LEAVE -> {
+                var newCommand = new Gson().fromJson(message, LeaveCommand.class);
+                leaveGame(newCommand, session);
+            }
             case RESIGN -> command = new Gson().fromJson(message, ResignCommand.class);
         }
     }
 
     public void joinPlayer(JoinPlayerCommand command, Session session) throws IOException {
-        try{
+        try {
             GameData myGame = service.getGame(command.getAuthString(), command.getGameId());
             String playerName = "";
-            if (Objects.equals(command.getColor(), "white")){
+            if (Objects.equals(command.getColor(), "white")) {
                 playerName = myGame.whiteUsername();
-            }
-            else{
+            } else {
                 playerName = myGame.blackUsername();
             }
             connections.add(playerName, session);
@@ -59,10 +62,24 @@ public class WebSocketHandler {
             session.getRemote().sendString(gameMessage.toString());
             var message = String.format("%s has joined the game as the %s player.", playerName, command.getColor());
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            connections.broadcast(playerName,notification);
-        }
-        catch(DataAccessException e){
+            connections.broadcast(playerName, notification);
+        } catch (DataAccessException e) {
             var message = "Error: game does not exist";
+            var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(errMessage.toString());
+        }
+    }
+
+    public void leaveGame(LeaveCommand command, Session session) throws IOException {
+        try {
+            service.deletePlayer(command.getColor(), command.getId(), command.getAuthString());
+            AuthData auth = service.getUserData(command.getAuthString());
+            connections.remove(auth.username());
+            var message = String.format("%s has left the game.", auth.username());
+            var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            connections.broadcast(auth.username(), notification);
+        } catch (DataAccessException e) {
+            var message = "Error:User not in game";
             var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
             session.getRemote().sendString(errMessage.toString());
         }

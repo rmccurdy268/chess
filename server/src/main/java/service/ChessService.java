@@ -53,6 +53,14 @@ public class ChessService {
         }
     }
 
+    //DELETE PLAYER FOR RESIGN/LEAVE
+    public void deletePlayer(String color, int gameId, String authToken)throws DataAccessException{
+        if(myUserDAO.getAuthData(authToken) == null){
+            throw new DataAccessException.UnauthorizedException();
+        }
+        myGameDAO.deletePlayer(color,gameId);
+    }
+
     /*
      *
      * GAME FUNCTIONS
@@ -130,5 +138,9 @@ public class ChessService {
         }
         HashMap<Integer, GameData> myGames = myGameDAO.getGames();
         return myGames.get(gameID);
+    }
+
+    public AuthData getUserData(String authToken) throws DataAccessException{
+        return myUserDAO.getAuthData(authToken);
     }
 }
