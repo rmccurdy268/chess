@@ -39,6 +39,6 @@ public class Repl implements NotificationHandler {
 
     @Override
     public void notify(Notification notification) {
-
+        System.out.print(SET_TEXT_COLOR_BLUE + notification.getMessage());
     }
 }

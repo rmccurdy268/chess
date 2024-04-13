@@ -13,10 +13,11 @@ import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @WebSocket
 public class WebSocketHandler {
-    private ChessService service;
+    private final ChessService service;
 
     private final ConnectionManager connections = new ConnectionManager();
 
@@ -46,7 +47,7 @@ public class WebSocketHandler {
         try{
             GameData myGame = service.getGame(command.getAuthString(), command.getGameId());
             String playerName = "";
-            if (command.getColor() == "white"){
+            if (Objects.equals(command.getColor(), "white")){
                 playerName = myGame.whiteUsername();
             }
             else{
