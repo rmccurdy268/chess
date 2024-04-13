@@ -49,7 +49,9 @@ public class MySQLGameDAO implements GameDAO {
     public Integer addGame(String name) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement("INSERT INTO gamesDB (gameName, chessGameJson) values (?,?)", Statement.RETURN_GENERATED_KEYS)) {
-                var json = new Gson().toJson(new ChessGame());
+                var myGame = new ChessGame();
+                myGame.getBoard().resetBoard();
+                var json = new Gson().toJson(myGame);
                 preparedStatement.setString(1,name);
                 preparedStatement.setString(2,json);
                 preparedStatement.executeUpdate();

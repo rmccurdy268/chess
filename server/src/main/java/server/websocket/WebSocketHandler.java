@@ -8,6 +8,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import service.ChessService;
 import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadMessage;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.*;
@@ -54,6 +55,8 @@ public class WebSocketHandler {
                 playerName = myGame.blackUsername();
             }
             connections.add(playerName, session);
+            var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.implementation().getBoard());
+            session.getRemote().sendString(gameMessage.toString());
             var message = String.format("%s has joined the game as the %s player.", playerName, command.getColor());
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
             connections.broadcast(playerName,notification);

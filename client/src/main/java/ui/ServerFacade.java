@@ -5,6 +5,7 @@ import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
 import server.*;
+import ui.websocket.LoadGameHandler;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
 
@@ -17,16 +18,18 @@ import java.net.URI;
 import java.net.URL;
 
 public class ServerFacade {
-    private String serverUrl;
+    private final String serverUrl;
     private int auth;
     private WebSocketFacade ws;
+    private LoadGameHandler loader;
 
 
-    private NotificationHandler notificationHandler;
+    private final NotificationHandler notificationHandler;
 
-    public ServerFacade(String url, NotificationHandler handler){
+    public ServerFacade(String url, NotificationHandler handler, LoadGameHandler loader){
         serverUrl = url;
         notificationHandler = handler;
+        this.loader = loader;
     }
     public int addUser(UserData data)throws ResponseException {
         var path = "/user";
@@ -64,7 +67,7 @@ public class ServerFacade {
         var path = "/game";
         JoinTeamInput input = new JoinTeamInput(color, gameID);
         this.makeRequest("PUT", path, input, null, true);
-        ws = new WebSocketFacade(serverUrl, notificationHandler);
+        ws = new WebSocketFacade(serverUrl, notificationHandler, loader);
         ws.joinPlayer(gameID, color,auth);
     }
 
@@ -78,6 +81,8 @@ public class ServerFacade {
         var path = "/db";
         this.makeRequest("DELETE", path, null, null, false);
     }
+
+
 
 
 

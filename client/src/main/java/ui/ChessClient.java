@@ -1,11 +1,16 @@
 package ui;
 
+import chess.ChessBoard;
 import exception.ResponseException;
 import model.UserData;
 import server.LoginInfo;
+import ui.websocket.CurrentBoard;
+import ui.websocket.LoadGameHandler;
 import ui.websocket.NotificationHandler;
+import webSocketMessages.serverMessages.LoadMessage;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class ChessClient {
     private String visitorName;
@@ -13,13 +18,33 @@ public class ChessClient {
     private final String serverURL;
     private State state = State.SIGNEDOUT;
     private int authToken;
+    private CurrentBoard myBoard;
+    private loadHandler loader;
+    private String currentColor;
+    private ChessBoard currentBoard;
 
     private final NotificationHandler notificationHandler;
     public ChessClient(String serverURL, NotificationHandler handler){
         this.notificationHandler = handler;
-        server = new ServerFacade(serverURL,handler);
+        loader = new loadHandler();
+        server = new ServerFacade(serverURL,handler, loader);
         this.serverURL = serverURL;
 
+    }
+
+    class loadHandler implements LoadGameHandler {
+
+        @Override
+        public void loadGame(LoadMessage message) {
+            if (Objects.equals(currentColor, "white")){
+                DrawBoard.printSpace();
+                DrawBoard.printWhiteDown(message.getBoard());
+            }
+            else{
+                DrawBoard.printSpace();
+                DrawBoard.printBlackDown(message.getBoard());
+            }
+        }
     }
     public String eval(String input){
         try {
@@ -104,7 +129,7 @@ public class ChessClient {
             int gameID = Integer.parseInt(params [0]);
             String color = params[1];
             server.joinAsPlayer(gameID, color);
-            renderBoard();
+            currentColor = color;
             return String.format("Successfully joined as %s player", color);
         }
         throw new ResponseException(400, "Expected: <id> [WHITE | BLACK | <empty>]");

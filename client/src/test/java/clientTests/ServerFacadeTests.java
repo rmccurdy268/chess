@@ -7,9 +7,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.LoginInfo;
+import ui.websocket.LoadGameHandler;
 import ui.websocket.NotificationHandler;
 import server.Server;
 import ui.ServerFacade;
+import webSocketMessages.serverMessages.LoadMessage;
 import webSocketMessages.serverMessages.Notification;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,6 +30,11 @@ public class ServerFacadeTests {
         facade = new ServerFacade(String.format("http://localhost:%d", port), new NotificationHandler() {
             @Override
             public void notify(Notification notification) {
+
+            }
+        }, new LoadGameHandler() {
+            @Override
+            public void loadGame(LoadMessage message) {
 
             }
         });

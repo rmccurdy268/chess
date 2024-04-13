@@ -2,7 +2,9 @@ package ui.websocket;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
+import webSocketMessages.serverMessages.LoadMessage;
 import webSocketMessages.serverMessages.Notification;
+import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.JoinPlayerCommand;
 
 import javax.websocket.*;
@@ -15,15 +17,17 @@ public class WebSocketFacade extends Endpoint {
 
     Session session;
     NotificationHandler notificationHandler;
+    LoadGameHandler loader;
 
     private int auth;
 
 
-    public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
+    public WebSocketFacade(String url, NotificationHandler notificationHandler, LoadGameHandler loader) throws ResponseException {
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/connect");
             this.notificationHandler = notificationHandler;
+            this.loader = loader;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
@@ -31,8 +35,14 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    Notification notification = new Gson().fromJson(message, Notification.class);
-                    notificationHandler.notify(notification);
+                    ServerMessage servMessage = new Gson().fromJson(message, ServerMessage.class);
+                    switch(servMessage.getServerMessageType()){
+                        case NOTIFICATION -> notificationHandler.notify(new Gson().fromJson(message, Notification.class));
+                        case LOAD_GAME -> {
+                            LoadMessage loadedMessage = new Gson().fromJson(message, LoadMessage.class);
+                            loader.loadGame(loadedMessage);
+                        }
+                    }
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {

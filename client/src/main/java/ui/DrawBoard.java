@@ -40,94 +40,19 @@ public class DrawBoard {
         printBackwardBoard(myBoard, out, direction.BACKWARD);
     }
 
-    /*public static void printBackwardBoard(ChessBoard board, PrintStream out){
-        setHeader(out, direction.FORWARD);
-        for(int i = 1; i <= BOARD_LENGTH; i++){
-            setHeaderColors(out);
-            out.print(SINGLE_SPACE);
-            out.print(BOTTOM_UP_COL_HEADER.charAt(i));
-            out.print(SINGLE_SPACE);
-            for (int j = 1; j <= BOARD_WIDTH; j++){
-                if(((j % 2 == 1)&&(i % 2 == 1))||((j % 2 == 0)&&(i % 2 == 0))){
-                    setBlackSpace(out);
-                }
-                else{
-                    setWhiteSpace(out);
-                }
-                ChessPiece currentPiece = board.getPiece(new ChessPosition(i,j));
-                if(currentPiece == null){
-                    out.print(EMPTY.repeat(1));
-                }
-                else{
-                    ChessGame.TeamColor pieceColor = currentPiece.getTeamColor();
-                    if (pieceColor == ChessGame.TeamColor.BLACK){
-                        setBlackPiece(out);
-                    }
-                    else{
-                        setWhitePiece(out);
-                    }
-                    switch(currentPiece.getPieceType()){
-                        case KING -> {
-                            if(pieceColor == ChessGame.TeamColor.WHITE) {
-                                out.print(WHITE_KING);
-                            }
-                            else{
-                                out.print(BLACK_KING);
-                            }
-                        }
-                        case QUEEN -> {
-                            if(pieceColor == ChessGame.TeamColor.WHITE) {
-                                out.print(WHITE_QUEEN);
-                            }
-                            else{
-                                out.print(BLACK_QUEEN);
-                            }
-                        }
-                        case BISHOP -> {
-                            if(pieceColor == ChessGame.TeamColor.WHITE) {
-                                out.print(WHITE_BISHOP);
-                            }
-                            else{
-                                out.print(BLACK_BISHOP);
-                            }
-                        }
-                        case KNIGHT -> {
-                            if(pieceColor == ChessGame.TeamColor.WHITE) {
-                                out.print(WHITE_KNIGHT);
-                            }
-                            else{
-                                out.print(BLACK_KNIGHT);
-                            }
-                        }
-                        case ROOK -> {
-                            if(pieceColor == ChessGame.TeamColor.WHITE) {
-                                out.print(WHITE_ROOK);
-                            }
-                            else{
-                                out.print(BLACK_ROOK);
-                            }
-                        }
-                        case PAWN -> {
-                            if(pieceColor == ChessGame.TeamColor.WHITE) {
-                                out.print(WHITE_PAWN);
-                            }
-                            else{
-                                out.print(BLACK_PAWN);
-                            }
-                        }
-                    }
-                }
-            }
-            setHeaderColors(out);
-            out.print(SINGLE_SPACE);
-            out.print(BOTTOM_UP_COL_HEADER.charAt(i));
-            out.print(SINGLE_SPACE);
-            out.println();
-        }
-        setHeader(out, direction.FORWARD);
+    public static void printSpace(){
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        out.println();
     }
-     */
+    public static void printWhiteDown(ChessBoard myBoard){
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        printForwardBoard(myBoard, out, direction.FORWARD);
+    }
 
+    public static void printBlackDown(ChessBoard myBoard){
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        printForwardBoard(myBoard, out, direction.BACKWARD);
+    }
 
 
     public static void printForwardBoard(ChessBoard board, PrintStream out, direction boardOrientation){
