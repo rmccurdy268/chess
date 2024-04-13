@@ -88,14 +88,15 @@ public class ChessService {
         if((teamColor == null)||(teamColor.isEmpty())||(teamColor.equals("empty"))){
             myGameDAO.addObserver(myUser.username(),gameID);
         }
+        //MAKING A BIG CHANGE HERE PLEASE TAKE OUT IF BREAK
         else if ((teamColor.equals("white"))||(teamColor.equals("black"))){
             if(teamColor.equals("white")){
-                if(myGame.whiteUsername()!= null){
+                if((myGame.whiteUsername()!= null)&&(!myGame.whiteUsername().equals(myUser.username()))){
                     throw new DataAccessException.AlreadyTakenException();
                 }
             }
             else{
-                if (myGame.blackUsername() != null) {
+                if ((myGame.blackUsername() != null)&&(!myGame.blackUsername().equals(myUser.username()))){
                     throw new DataAccessException.AlreadyTakenException();
                 }
             }
