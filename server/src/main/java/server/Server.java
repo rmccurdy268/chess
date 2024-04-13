@@ -14,19 +14,17 @@ import java.util.Map;
 public class Server {
 
     private final ChessService service;
-    private WebSocketHandler handler;
+    private WebSocketHandler myhandler;
 
     public Server(){
             service = new ChessService();
-            this.handler = new WebSocketHandler(service);
+            myhandler = new WebSocketHandler(service);
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
-        Spark.webSocket("/connect", handler);
-
-        Spark.get("/echo/:msg", (req, res) -> "HTTP response: " + req.params(":msg"));
 
         Spark.staticFiles.location("web");
+        Spark.webSocket("/connect", myhandler);
         Spark.init();
         Spark.post("/user", this::registerUser);
         Spark.post("/session", this::login);
