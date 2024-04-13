@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import model.UserData;
+import server.websocket.WebSocketHandler;
 import service.ChessService;
 import spark.Request;
 import spark.Response;
@@ -13,13 +14,15 @@ import java.util.Map;
 public class Server {
 
     private final ChessService service;
+    private WebSocketHandler handler;
 
     public Server(){
             service = new ChessService();
+            this.handler = new WebSocketHandler(service);
     }
     public int run(int desiredPort) {
         Spark.port(desiredPort);
-        Spark.webSocket("/connect", Server.class);
+        Spark.webSocket("/connect", handler);
 
         Spark.get("/echo/:msg", (req, res) -> "HTTP response: " + req.params(":msg"));
 

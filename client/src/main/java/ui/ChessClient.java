@@ -3,9 +3,7 @@ package ui;
 import exception.ResponseException;
 import model.UserData;
 import server.LoginInfo;
-import server.ServerFacade;
 import ui.websocket.NotificationHandler;
-import ui.websocket.WebSocketFacade;
 
 import java.util.Arrays;
 
@@ -14,13 +12,14 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverURL;
     private State state = State.SIGNEDOUT;
-    private WebSocketFacade ws;
     private int authToken;
+
     private final NotificationHandler notificationHandler;
     public ChessClient(String serverURL, NotificationHandler handler){
-        server = new ServerFacade(serverURL);
-        this.serverURL = serverURL;
         this.notificationHandler = handler;
+        server = new ServerFacade(serverURL,handler);
+        this.serverURL = serverURL;
+
     }
     public String eval(String input){
         try {
@@ -59,13 +58,18 @@ public class ChessClient {
 
     private String register(String[] params)throws ResponseException{
         if (params.length >= 3) {
-            state = State.SIGNEDIN;
-            var name = params[0];
-            var password = params[1];
-            var email = params[2];
-            var userData = new UserData(name, password, email);
-            authToken = server.addUser(userData);
-            return String.format("Registered successfully. %d is your authorization token.", authToken);
+            try{
+                state = State.SIGNEDIN;
+                var name = params[0];
+                var password = params[1];
+                var email = params[2];
+                var userData = new UserData(name, password, email);
+                authToken = server.addUser(userData);
+                return String.format("Registered successfully. %d is your authorization token.", authToken);
+            }
+            catch(ResponseException e){
+                state = State.SIGNEDOUT;
+            }
         }
         throw new ResponseException(400, "Expected: <username> <password> <email>");
     }
@@ -99,10 +103,8 @@ public class ChessClient {
             state = State.SIGNEDIN;
             int gameID = Integer.parseInt(params [0]);
             String color = params[1];
-            visitorName = String.join("-", params);
-            ws = new WebSocketFacade(serverURL, notificationHandler);
-            ws.joinPlayer(gameID, color,authToken);
-            //renderBoard();
+            server.joinAsPlayer(gameID, color);
+            renderBoard();
             return String.format("Successfully joined as %s player", color);
         }
         throw new ResponseException(400, "Expected: <id> [WHITE | BLACK | <empty>]");

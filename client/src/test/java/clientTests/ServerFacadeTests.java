@@ -7,8 +7,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.LoginInfo;
+import ui.websocket.NotificationHandler;
 import server.Server;
-import server.ServerFacade;
+import ui.ServerFacade;
+import webSocketMessages.serverMessages.Notification;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,7 +25,12 @@ public class ServerFacadeTests {
         server = new Server();
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
-        facade = new ServerFacade(String.format("http://localhost:%d", port));
+        facade = new ServerFacade(String.format("http://localhost:%d", port), new NotificationHandler() {
+            @Override
+            public void notify(Notification notification) {
+
+            }
+        });
     }
 
     @BeforeEach

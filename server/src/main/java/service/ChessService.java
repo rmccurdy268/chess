@@ -8,6 +8,7 @@ import server.GameList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 public class ChessService {
     private final GameDAO myGameDAO;
@@ -117,5 +118,17 @@ public class ChessService {
         myGameDAO.clearGames();
         myUserDAO.clearUsers();
         myUserDAO.clearAuth();
+    }
+
+
+    //WEBSOCKET HELPERS
+
+    public GameData getGame(String authToken, int gameID) throws DataAccessException {
+        AuthData myAuthData = myUserDAO.getAuthData(authToken);
+        if(myAuthData == null){
+            throw new DataAccessException.UnauthorizedException();
+        }
+        HashMap<Integer, GameData> myGames = myGameDAO.getGames();
+        return myGames.get(gameID);
     }
 }

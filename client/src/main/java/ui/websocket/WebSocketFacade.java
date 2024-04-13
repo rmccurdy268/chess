@@ -3,7 +3,7 @@ package ui.websocket;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import webSocketMessages.serverMessages.Notification;
-import webSocketMessages.userCommands.*;
+import webSocketMessages.userCommands.JoinPlayerCommand;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -50,6 +50,10 @@ public class WebSocketFacade extends Endpoint {
         this.auth = auth;
     }
 
+
+    //public ChessBoard getChessBoard(int gameId){}
+
+
     public void joinPlayer(int gameId, String color, int authToken) throws ResponseException {
         try {
             var command = new JoinPlayerCommand(gameId, color, String.valueOf(authToken));
@@ -58,17 +62,6 @@ public class WebSocketFacade extends Endpoint {
             throw new ResponseException(500, ex.getMessage());
         }
     }
-
-    public void leavePetShop(String visitorName) throws ResponseException {
-        try {
-            var action = new Action(Action.Type.EXIT, visitorName);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-            this.session.close();
-        } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
-    }
-
 }
 
 

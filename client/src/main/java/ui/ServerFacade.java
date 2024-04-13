@@ -1,9 +1,12 @@
-package server;
+package ui;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
+import server.*;
+import ui.websocket.NotificationHandler;
+import ui.websocket.WebSocketFacade;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,10 +19,14 @@ import java.net.URL;
 public class ServerFacade {
     private String serverUrl;
     private int auth;
+    private WebSocketFacade ws;
 
-    public ServerFacade(String url){
+
+    private NotificationHandler notificationHandler;
+
+    public ServerFacade(String url, NotificationHandler handler){
         serverUrl = url;
-
+        notificationHandler = handler;
     }
     public int addUser(UserData data)throws ResponseException {
         var path = "/user";
@@ -57,6 +64,8 @@ public class ServerFacade {
         var path = "/game";
         JoinTeamInput input = new JoinTeamInput(color, gameID);
         this.makeRequest("PUT", path, input, null, true);
+        ws = new WebSocketFacade(serverUrl, notificationHandler);
+        ws.joinPlayer(gameID, color,auth);
     }
 
     public void joinAsObserver(int gameID) throws ResponseException{
@@ -82,7 +91,6 @@ public class ServerFacade {
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
             http.setDoOutput(true);
-
             writeBody(request, http, needsAuth, auth);
             http.connect();
             throwIfNotSuccessful(http);
