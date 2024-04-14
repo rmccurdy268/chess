@@ -142,9 +142,9 @@ public class ChessClient {
     private String joinObserver(String[] params)throws ResponseException{
         assertSignedIn();
         if (params.length == 1){
+            state = State.INGAME;
             int gameID = Integer.parseInt(params[0]);
             server.joinAsObserver(gameID);
-            renderBoard();
             return "Joined game as observer succesfully";
         }
         throw new ResponseException(400, "Expected: <id>");
@@ -153,6 +153,7 @@ public class ChessClient {
     private String leaveGame()throws ResponseException{
         assertInGame();
         server.leave(currentGameId, currentColor);
+        currentGameId = 0;
         return "You left the game.";
     }
 

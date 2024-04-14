@@ -79,6 +79,8 @@ public class ServerFacade {
         var path = "/game";
         JoinTeamInput input = new JoinTeamInput(null, gameID);
         this.makeRequest("PUT", path, input, null, true);
+        ws = new WebSocketFacade(serverUrl, notificationHandler, loader);
+        ws.joinObserver(gameID,auth);
     }
 
     public void clear() throws ResponseException {

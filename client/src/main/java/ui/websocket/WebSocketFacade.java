@@ -5,6 +5,7 @@ import exception.ResponseException;
 import webSocketMessages.serverMessages.LoadMessage;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinObserverCommand;
 import webSocketMessages.userCommands.JoinPlayerCommand;
 import webSocketMessages.userCommands.LeaveCommand;
 
@@ -67,6 +68,15 @@ public class WebSocketFacade extends Endpoint {
     public void joinPlayer(int gameId, String color, int authToken) throws ResponseException {
         try {
             var command = new JoinPlayerCommand(gameId, color, String.valueOf(authToken));
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    public void joinObserver(int gameId, int authToken) throws ResponseException{
+        try {
+            var command = new JoinObserverCommand(gameId, String.valueOf(authToken));
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());

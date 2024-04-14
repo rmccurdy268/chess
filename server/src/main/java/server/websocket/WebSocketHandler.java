@@ -36,8 +36,8 @@ public class WebSocketHandler {
                 joinPlayer(newCommand, session);
             }
             case JOIN_OBSERVER -> {
-                command = new Gson().fromJson(message, JoinObserverCommand.class);
-                connections.add(command.getAuthString(), session);
+                var newCommand = new Gson().fromJson(message, JoinObserverCommand.class);
+                joinObserver(newCommand,session);
             }
             case MAKE_MOVE -> command = new Gson().fromJson(message, MakeMoveCommand.class);
             case LEAVE -> {
@@ -63,6 +63,26 @@ public class WebSocketHandler {
             var message = String.format("%s has joined the game as the %s player.", playerName, command.getColor());
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
             connections.broadcast(playerName, notification);
+        } catch (DataAccessException e) {
+            var message = "Error: game does not exist";
+            var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(errMessage.toString());
+        }
+    }
+
+    public void joinObserver(JoinObserverCommand command, Session session)throws IOException{
+        try {
+            GameData myGame = service.getGame(command.getAuthString(), command.getGameId());
+            String playerName = "";
+            AuthData data = service.getUserData(command.getAuthString());
+            playerName = data.username();
+            connections.add(playerName, session);
+            var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.implementation().getBoard());
+            session.getRemote().sendString(gameMessage.toString());
+            var message = String.format("%s has started observing the game.", playerName);
+            var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            connections.broadcast(playerName, notification);
+
         } catch (DataAccessException e) {
             var message = "Error: game does not exist";
             var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
