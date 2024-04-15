@@ -5,6 +5,7 @@ import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
 import server.*;
+import ui.websocket.ErrorHandler;
 import ui.websocket.LoadGameHandler;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
@@ -23,14 +24,16 @@ public class ServerFacade {
     private int auth;
     private WebSocketFacade ws;
     private LoadGameHandler loader;
+    private ErrorHandler error;
     private HashMap<Character,Integer> boardMap;
 
 
     private final NotificationHandler notificationHandler;
 
-    public ServerFacade(String url, NotificationHandler handler, LoadGameHandler loader){
+    public ServerFacade(String url, NotificationHandler handler, LoadGameHandler loader, ErrorHandler error){
         serverUrl = url;
         notificationHandler = handler;
+        this.error = error;
         this.loader = loader;
     }
     public int addUser(UserData data)throws ResponseException {
@@ -73,7 +76,7 @@ public class ServerFacade {
         var path = "/game";
         JoinTeamInput input = new JoinTeamInput(color, gameID);
         this.makeRequest("PUT", path, input, null, true);
-        ws = new WebSocketFacade(serverUrl, notificationHandler, loader);
+        ws = new WebSocketFacade(serverUrl, notificationHandler, loader, error);
         ws.joinPlayer(gameID, color,auth);
     }
 
@@ -81,17 +84,17 @@ public class ServerFacade {
         var path = "/game";
         JoinTeamInput input = new JoinTeamInput(null, gameID);
         this.makeRequest("PUT", path, input, null, true);
-        ws = new WebSocketFacade(serverUrl, notificationHandler, loader);
+        ws = new WebSocketFacade(serverUrl, notificationHandler, loader, error);
         ws.joinObserver(gameID,auth);
     }
 
     public void makeMove(String ogPos, String finalPos, String promoPiece, int gameId) throws ResponseException {
-        ws = new WebSocketFacade(serverUrl, notificationHandler, loader);
+        ws = new WebSocketFacade(serverUrl, notificationHandler, loader, error);
         ws.makeMove(ogPos, finalPos, promoPiece, gameId, auth);
     }
 
     public void resign(int gameId) throws ResponseException {
-        ws = new WebSocketFacade(serverUrl,notificationHandler, loader);
+        ws = new WebSocketFacade(serverUrl,notificationHandler, loader, error);
         ws.resign(gameId, auth);
     }
 

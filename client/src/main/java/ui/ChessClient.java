@@ -4,8 +4,10 @@ import chess.ChessBoard;
 import exception.ResponseException;
 import model.UserData;
 import server.LoginInfo;
+import ui.websocket.ErrorHandler;
 import ui.websocket.LoadGameHandler;
 import ui.websocket.NotificationHandler;
+import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadMessage;
 
 import java.util.Arrays;
@@ -18,6 +20,7 @@ public class ChessClient {
     private State state = State.SIGNEDOUT;
     private int authToken;
     private loadHandler loader;
+    private ErrorMessageHandler error;
     private String currentColor;
     private ChessBoard currentBoard;
     private int currentGameId;
@@ -26,7 +29,8 @@ public class ChessClient {
     public ChessClient(String serverURL, NotificationHandler handler){
         this.notificationHandler = handler;
         loader = new loadHandler();
-        server = new ServerFacade(serverURL,handler, loader);
+        error = new ErrorMessageHandler();
+        server = new ServerFacade(serverURL,handler, loader, error);
         this.serverURL = serverURL;
 
     }
@@ -36,14 +40,23 @@ public class ChessClient {
         @Override
         public void loadGame(LoadMessage message) {
             currentBoard = message.getBoard();
-            if (Objects.equals(currentColor, "white")){
-                DrawBoard.printSpace();
-                DrawBoard.printWhiteDown(message.getBoard());
-            }
-            else{
+            if (Objects.equals(currentColor, "black")){
                 DrawBoard.printSpace();
                 DrawBoard.printBlackDown(message.getBoard());
             }
+            else{
+                DrawBoard.printSpace();
+                DrawBoard.printWhiteDown(message.getBoard());
+            }
+        }
+    }
+
+    class ErrorMessageHandler implements ErrorHandler {
+
+        @Override
+        public void getError(ErrorMessage message) {
+            System.out.print(message.toString());
+            System.out.println();
         }
     }
     public String eval(String input){

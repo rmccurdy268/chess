@@ -7,10 +7,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.LoginInfo;
+import ui.websocket.ErrorHandler;
 import ui.websocket.LoadGameHandler;
 import ui.websocket.NotificationHandler;
 import server.Server;
 import ui.ServerFacade;
+import webSocketMessages.serverMessages.ErrorMessage;
 import webSocketMessages.serverMessages.LoadMessage;
 import webSocketMessages.serverMessages.Notification;
 
@@ -35,6 +37,11 @@ public class ServerFacadeTests {
         }, new LoadGameHandler() {
             @Override
             public void loadGame(LoadMessage message) {
+
+            }
+        }, new ErrorHandler() {
+            @Override
+            public void getError(ErrorMessage message) {
 
             }
         });

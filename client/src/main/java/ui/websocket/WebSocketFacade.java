@@ -16,16 +16,18 @@ public class WebSocketFacade extends Endpoint {
     Session session;
     NotificationHandler notificationHandler;
     LoadGameHandler loader;
+    ErrorHandler error;
 
     private int auth;
 
 
-    public WebSocketFacade(String url, NotificationHandler notificationHandler, LoadGameHandler loader) throws ResponseException {
+    public WebSocketFacade(String url, NotificationHandler notificationHandler, LoadGameHandler loader, ErrorHandler error) throws ResponseException {
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/connect");
             this.notificationHandler = notificationHandler;
             this.loader = loader;
+            this.error = error;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
@@ -40,6 +42,7 @@ public class WebSocketFacade extends Endpoint {
                             LoadMessage loadedMessage = new Gson().fromJson(message, LoadMessage.class);
                             loader.loadGame(loadedMessage);
                         }
+                        case ERROR -> error.getError(new Gson().fromJson(message, ErrorMessage.class));
                     }
                 }
             });
