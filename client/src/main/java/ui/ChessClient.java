@@ -4,7 +4,6 @@ import chess.ChessBoard;
 import exception.ResponseException;
 import model.UserData;
 import server.LoginInfo;
-import ui.websocket.CurrentBoard;
 import ui.websocket.LoadGameHandler;
 import ui.websocket.NotificationHandler;
 import webSocketMessages.serverMessages.LoadMessage;
@@ -18,7 +17,6 @@ public class ChessClient {
     private final String serverURL;
     private State state = State.SIGNEDOUT;
     private int authToken;
-    private CurrentBoard myBoard;
     private loadHandler loader;
     private String currentColor;
     private ChessBoard currentBoard;
@@ -37,6 +35,7 @@ public class ChessClient {
 
         @Override
         public void loadGame(LoadMessage message) {
+            currentBoard = message.getBoard();
             if (Objects.equals(currentColor, "white")){
                 DrawBoard.printSpace();
                 DrawBoard.printWhiteDown(message.getBoard());
@@ -62,7 +61,7 @@ public class ChessClient {
                 case "join" -> joinGame(params);
                 case "observe" -> joinObserver(params);
                 case "leave" -> leaveGame();
-
+                case "redrawboard" ->redrawBoard();
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -155,6 +154,17 @@ public class ChessClient {
         server.leave(currentGameId, currentColor);
         currentGameId = 0;
         return "You left the game.";
+    }
+
+    private String redrawBoard()throws ResponseException{
+        assertInGame();
+        if (currentColor == "black"){
+            DrawBoard.printBlackDown(currentBoard);
+        }
+        else{
+            DrawBoard.printWhiteDown(currentBoard);
+        }
+        return "";
     }
 
 
