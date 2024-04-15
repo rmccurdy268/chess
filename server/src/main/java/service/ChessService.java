@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import dataAccess.*;
 import model.AuthData;
 import model.GameData;
@@ -143,5 +144,13 @@ public class ChessService {
 
     public AuthData getUserData(String authToken) throws DataAccessException{
         return myUserDAO.getAuthData(authToken);
+    }
+
+    public void updateGame(ChessGame updatedGame, int gameId, String authToken) throws DataAccessException {
+        AuthData myAuthData = myUserDAO.getAuthData(authToken);
+        if(myAuthData == null){
+            throw new DataAccessException.UnauthorizedException();
+        }
+        myGameDAO.updateGame(updatedGame,gameId);
     }
 }

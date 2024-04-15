@@ -111,26 +111,21 @@ public class WebSocketHandler {
     }
 
     public void makeMove(MakeMoveCommand command, Session session) throws IOException {
-        try{
-            GameData myGameData = service.getGame(command.getAuthString(),command.getGameId());
+        try {
+            GameData myGameData = service.getGame(command.getAuthString(), command.getGameId());
             AuthData auth = service.getUserData(command.getAuthString());
             ChessGame myGame = myGameData.implementation();
             ChessMove myMove = createChessMove(command.getOgPos(), command.getFinalPos(), command.getPromoPiece());
-            try{
-                myGame.makeMove(myMove);
-                var message = String.format("%s has moved from %s to %s", auth.username(), command.getOgPos(), command.getFinalPos());
-                var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-                connections.broadcast(auth.username(), notification);
-            }
-            catch(InvalidMoveException ex){
-                var message = "Error: Invalid Move";
-                var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
-                session.getRemote().sendString(errMessage.toString());
-            }
-
+            myGame.makeMove(myMove);
+            service.updateGame(myGame, command.getGameId(), auth.authToken());
+            var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.getBoard());
+            connections.broadcastAll(gameMessage);
+            var message = String.format("%s has moved from %s to %s", auth.username(), command.getOgPos(), command.getFinalPos());
+            var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            connections.broadcast(auth.username(), notification);
         }
-        catch(DataAccessException e ){
-            var message = "Error:User not in game";
+        catch (DataAccessException | InvalidMoveException ex) {
+            var message = "Error: Invalid Move";
             var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
             session.getRemote().sendString(errMessage.toString());
         }
@@ -146,12 +141,12 @@ public class WebSocketHandler {
         boardMap.put('g', 7);
         boardMap.put('h', 8);
         int ogFirst = boardMap.get(ogPos.charAt(0));
-        int ogSecond = ogPos.charAt(1);
+        int ogSecond = Character.getNumericValue(ogPos.charAt(1));
         int finalFirst = boardMap.get(finalPos.charAt(0));
-        int finalSecond = finalPos.charAt(1);
-        ChessPosition firstPos = new ChessPosition(ogFirst, ogSecond);
-        ChessPosition secondPos = new ChessPosition(finalFirst, finalSecond);
-        ChessPiece.PieceType myType = ChessPiece.PieceType.QUEEN;
+        int finalSecond = Character.getNumericValue(finalPos.charAt(1));
+        ChessPosition firstPos = new ChessPosition(ogSecond, ogFirst);
+        ChessPosition secondPos = new ChessPosition(finalSecond, finalFirst);
+        ChessPiece.PieceType myType = null;
         switch(promoPiece){
             case "queen"-> myType = ChessPiece.PieceType.QUEEN;
             case "rook"-> myType = ChessPiece.PieceType.ROOK;

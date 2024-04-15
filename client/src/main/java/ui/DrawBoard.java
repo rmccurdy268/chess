@@ -51,14 +51,14 @@ public class DrawBoard {
 
     public static void printBlackDown(ChessBoard myBoard){
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-        printForwardBoard(myBoard, out, direction.BACKWARD);
+        printBackwardBoard(myBoard, out, direction.BACKWARD);
     }
 
 
     public static void printForwardBoard(ChessBoard board, PrintStream out, direction boardOrientation){
-        setHeader(out, direction.BACKWARD);
+        setHeader(out, direction.FORWARD);
         makeMainBoard(board, out, boardOrientation);
-        setHeader(out, direction.BACKWARD);
+        setHeader(out, direction.FORWARD);
     }
 
     public static void printBackwardBoard(ChessBoard board, PrintStream out, direction boardOrientation){
@@ -70,13 +70,13 @@ public class DrawBoard {
     private static void makeMainBoard(ChessBoard board, PrintStream out, direction boardOrientation) {
         String colHeader = "";
         if (boardOrientation == direction.FORWARD){
-            colHeader = BOTTOM_UP_COL_HEADER;
+            colHeader = TOP_DOWN_COL_HEADER;
             for (int i = BOARD_LENGTH; i >= 1; i--){
                 setHeaderColors(out);
                 out.print(SINGLE_SPACE);
                 out.print(colHeader.charAt(i));
                 out.print(SINGLE_SPACE);
-                for (int j = BOARD_WIDTH; j>= 1; j--){
+                for (int j = 1; j<= BOARD_WIDTH; j++){
                     setBgColor(i,j,out);
                     ChessPiece currentPiece = board.getPiece(new ChessPosition(i,j));
                     if (currentPiece != null){
@@ -95,7 +95,7 @@ public class DrawBoard {
 
         }
         else{
-            colHeader = BOTTOM_UP_COL_HEADER;
+            colHeader = TOP_DOWN_COL_HEADER;
             for (int i = 1; i <= BOARD_LENGTH; i++){
                 setHeaderColors(out);
                 out.print(SINGLE_SPACE);

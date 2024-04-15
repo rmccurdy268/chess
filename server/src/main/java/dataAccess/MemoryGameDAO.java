@@ -49,6 +49,8 @@ public class MemoryGameDAO implements GameDAO{
         observerMap.get(gameID).add(username);
     }
 
+    public void updateGame(ChessGame updatedGame, int gameId){}
+
     public void clearGames() {
         gameMap.clear();
         observerMap.clear();
