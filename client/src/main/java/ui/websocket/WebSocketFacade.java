@@ -1,5 +1,6 @@
 package ui.websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import webSocketMessages.serverMessages.*;
@@ -66,7 +67,16 @@ public class WebSocketFacade extends Endpoint {
 
     public void joinPlayer(int gameId, String color, int authToken) throws ResponseException {
         try {
-            var command = new JoinPlayerCommand(gameId, color, String.valueOf(authToken));
+            ChessGame.TeamColor teamColor;
+            if(color.equalsIgnoreCase("white")){
+                teamColor = ChessGame.TeamColor.WHITE;
+            } else if (color.equalsIgnoreCase("black")) {
+                teamColor = ChessGame.TeamColor.BLACK;
+            }
+            else{
+                throw new ResponseException(500,"Wrong color");
+            }
+            var command = new JoinPlayerCommand(gameId, teamColor, String.valueOf(authToken));
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());

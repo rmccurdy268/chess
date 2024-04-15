@@ -3,15 +3,15 @@ package webSocketMessages.serverMessages;
 import chess.ChessBoard;
 
 public class LoadMessage extends ServerMessage {
-    private final ChessBoard myBoard;
+    private final ChessBoard game;
 
     public LoadMessage(ServerMessageType type, ChessBoard board) {
         super(type);
-        myBoard = board;
+        game = board;
     }
 
     public ChessBoard getBoard(){
-        return myBoard;
+        return game;
     }
 }
 

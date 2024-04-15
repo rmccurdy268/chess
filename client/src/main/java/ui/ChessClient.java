@@ -12,6 +12,7 @@ import webSocketMessages.serverMessages.LoadMessage;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Scanner;
 
 public class ChessClient {
     private String visitorName;
@@ -199,8 +200,16 @@ public class ChessClient {
         if (currentColor == null){
             throw new ResponseException(400,"Observer can not resign game");
         }
-        server.resign(currentGameId);
-        return "You have resigned from the game.";
+        System.out.print("Confirm? y/n\n");
+        Scanner scanner = new Scanner(System.in);
+        var response = scanner.nextLine();
+        if(response.equals("y")){
+            server.resign(currentGameId);
+            return "You have resigned from the game.";
+        }
+        else{
+            return "You have not resigned";
+        }
     }
 
 

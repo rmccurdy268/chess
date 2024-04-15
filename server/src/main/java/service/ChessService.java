@@ -9,7 +9,6 @@ import server.GameList;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 
 public class ChessService {
     private final GameDAO myGameDAO;
@@ -90,8 +89,8 @@ public class ChessService {
             myGameDAO.addObserver(myUser.username(),gameID);
         }
         //MAKING A BIG CHANGE HERE PLEASE TAKE OUT IF BREAK
-        else if ((teamColor.equals("white"))||(teamColor.equals("black"))){
-            if(teamColor.equals("white")){
+        else if ((teamColor.equalsIgnoreCase("white"))||(teamColor.equalsIgnoreCase("black"))){
+            if(teamColor.equalsIgnoreCase("white")){
                 if((myGame.whiteUsername()!= null)&&(!myGame.whiteUsername().equals(myUser.username()))){
                     throw new DataAccessException.AlreadyTakenException();
                 }
@@ -138,8 +137,9 @@ public class ChessService {
         if(myAuthData == null){
             throw new DataAccessException.UnauthorizedException();
         }
-        HashMap<Integer, GameData> myGames = myGameDAO.getGames();
-        return myGames.get(gameID);
+        //HashMap<Integer, GameData> myGames = myGameDAO.getGames();
+        return myGameDAO.getGame(gameID);
+
     }
 
     public AuthData getUserData(String authToken) throws DataAccessException{

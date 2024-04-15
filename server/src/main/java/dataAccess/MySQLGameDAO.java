@@ -95,10 +95,10 @@ public class MySQLGameDAO implements GameDAO {
 
     public void addPlayer(String userName, String teamColor, int gameID) throws DataAccessException {
         String statement = "";
-        if (Objects.equals(teamColor, "white")) {
+        if (Objects.equals(teamColor.toLowerCase(), "white")) {
             statement = "UPDATE gamesDB SET whiteUser=? WHERE gameID = ?";
         }
-        else if (Objects.equals(teamColor, "black")){
+        else if (Objects.equals(teamColor.toLowerCase(), "black")){
             statement = "UPDATE gamesDB SET blackUser=? WHERE gameID = ?";
         }
         else{
