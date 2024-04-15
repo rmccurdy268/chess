@@ -54,7 +54,8 @@ public class ChessGame {
      */
     public enum TeamColor {
         WHITE,
-        BLACK
+        BLACK,
+        NONE
     }
 
     /**
@@ -317,6 +318,10 @@ public class ChessGame {
         else{
             return false;
         }
+    }
+
+    public void endGame(){
+        teamTurn = TeamColor.NONE;
     }
 
     /**

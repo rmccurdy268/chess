@@ -63,6 +63,7 @@ public class ChessClient {
                 case "leave" -> leaveGame();
                 case "redrawboard" ->redrawBoard();
                 case "makemove" -> makeMove(params);
+                case "resign" -> resign();
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -178,6 +179,15 @@ public class ChessClient {
             return "Move made successfully";
         }
         throw new ResponseException(400, "Expected: <currentPosition> <desiredPosition> <promotionPiece>");
+    }
+
+    private String resign()throws ResponseException{
+        assertInGame();
+        if (currentColor == null){
+            throw new ResponseException(400,"Observer can not resign game");
+        }
+        server.resign(currentGameId);
+        return "You have resigned from the game.";
     }
 
 

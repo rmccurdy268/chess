@@ -49,7 +49,10 @@ public class WebSocketHandler {
                 var newCommand = new Gson().fromJson(message, LeaveCommand.class);
                 leaveGame(newCommand, session);
             }
-            case RESIGN -> command = new Gson().fromJson(message, ResignCommand.class);
+            case RESIGN -> {
+                var newCommand = new Gson().fromJson(message, ResignCommand.class);
+                resign(newCommand, session);
+            }
         }
     }
 
@@ -130,6 +133,29 @@ public class WebSocketHandler {
             session.getRemote().sendString(errMessage.toString());
         }
     }
+
+    public void resign(ResignCommand command, Session session)throws IOException{
+        try{
+            GameData myGameData = service.getGame(command.getAuthString(), command.getGameId());
+            AuthData auth = service.getUserData(command.getAuthString());
+            ChessGame myGame = myGameData.implementation();
+            myGame.endGame();
+            service.updateGame(myGame, command.getGameId(), auth.authToken());
+            var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.getBoard());
+            connections.broadcastAll(gameMessage);
+            var message = String.format("%s has resigned. Game Over!", auth.username());
+            var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            connections.broadcast(auth.username(), notification);
+        }
+        catch(DataAccessException ex){
+            var message = "Error:Couldn't resign";
+            var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(errMessage.toString());
+        }
+    }
+
+
+    //HELPERS
     public ChessMove createChessMove(String ogPos, String finalPos, String promoPiece){
         HashMap<Character, Integer> boardMap = new HashMap<>();
         boardMap.put('a', 1);

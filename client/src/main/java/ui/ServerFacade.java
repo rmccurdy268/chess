@@ -90,6 +90,11 @@ public class ServerFacade {
         ws.makeMove(ogPos, finalPos, promoPiece, gameId, auth);
     }
 
+    public void resign(int gameId) throws ResponseException {
+        ws = new WebSocketFacade(serverUrl,notificationHandler, loader);
+        ws.resign(gameId, auth);
+    }
+
     public void clear() throws ResponseException {
         var path = "/db";
         this.makeRequest("DELETE", path, null, null, false);
