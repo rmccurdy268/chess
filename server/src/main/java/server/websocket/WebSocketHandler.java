@@ -1,5 +1,6 @@
 package server.websocket;
 
+import chess.*;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
 import model.AuthData;
@@ -15,6 +16,7 @@ import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Objects;
 
 @WebSocket
@@ -39,7 +41,10 @@ public class WebSocketHandler {
                 var newCommand = new Gson().fromJson(message, JoinObserverCommand.class);
                 joinObserver(newCommand,session);
             }
-            case MAKE_MOVE -> command = new Gson().fromJson(message, MakeMoveCommand.class);
+            case MAKE_MOVE -> {
+                var newCommand = new Gson().fromJson(message, MakeMoveCommand.class);
+                makeMove(newCommand, session);
+            }
             case LEAVE -> {
                 var newCommand = new Gson().fromJson(message, LeaveCommand.class);
                 leaveGame(newCommand, session);
@@ -103,5 +108,58 @@ public class WebSocketHandler {
             var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
             session.getRemote().sendString(errMessage.toString());
         }
+    }
+
+    public void makeMove(MakeMoveCommand command, Session session) throws IOException {
+        try{
+            GameData myGameData = service.getGame(command.getAuthString(),command.getGameId());
+            AuthData auth = service.getUserData(command.getAuthString());
+            ChessGame myGame = myGameData.implementation();
+            ChessMove myMove = createChessMove(command.getOgPos(), command.getFinalPos(), command.getPromoPiece());
+            try{
+                myGame.makeMove(myMove);
+                var message = String.format("%s has moved from %s to %s", auth.username(), command.getOgPos(), command.getFinalPos());
+                var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+                connections.broadcast(auth.username(), notification);
+            }
+            catch(InvalidMoveException ex){
+                var message = "Error: Invalid Move";
+                var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
+                session.getRemote().sendString(errMessage.toString());
+            }
+
+        }
+        catch(DataAccessException e ){
+            var message = "Error:User not in game";
+            var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(errMessage.toString());
+        }
+    }
+    public ChessMove createChessMove(String ogPos, String finalPos, String promoPiece){
+        HashMap<Character, Integer> boardMap = new HashMap<>();
+        boardMap.put('a', 1);
+        boardMap.put('b', 2);
+        boardMap.put('c', 3);
+        boardMap.put('d', 4);
+        boardMap.put('e', 5);
+        boardMap.put('f', 6);
+        boardMap.put('g', 7);
+        boardMap.put('h', 8);
+        int ogFirst = boardMap.get(ogPos.charAt(0));
+        int ogSecond = ogPos.charAt(1);
+        int finalFirst = boardMap.get(finalPos.charAt(0));
+        int finalSecond = finalPos.charAt(1);
+        ChessPosition firstPos = new ChessPosition(ogFirst, ogSecond);
+        ChessPosition secondPos = new ChessPosition(finalFirst, finalSecond);
+        ChessPiece.PieceType myType = ChessPiece.PieceType.QUEEN;
+        switch(promoPiece){
+            case "queen"-> myType = ChessPiece.PieceType.QUEEN;
+            case "rook"-> myType = ChessPiece.PieceType.ROOK;
+            case "knight"-> myType = ChessPiece.PieceType.KNIGHT;
+            case "bishop"-> myType = ChessPiece.PieceType.BISHOP;
+            case "king"-> myType = ChessPiece.PieceType.KING;
+            case "pawn"-> myType = ChessPiece.PieceType.PAWN;
+        }
+        return new ChessMove(firstPos,secondPos,myType);
     }
 }

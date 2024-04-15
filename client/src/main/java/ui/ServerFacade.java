@@ -16,12 +16,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashMap;
 
 public class ServerFacade {
     private final String serverUrl;
     private int auth;
     private WebSocketFacade ws;
     private LoadGameHandler loader;
+    private HashMap<Character,Integer> boardMap;
 
 
     private final NotificationHandler notificationHandler;
@@ -81,6 +83,11 @@ public class ServerFacade {
         this.makeRequest("PUT", path, input, null, true);
         ws = new WebSocketFacade(serverUrl, notificationHandler, loader);
         ws.joinObserver(gameID,auth);
+    }
+
+    public void makeMove(String ogPos, String finalPos, String promoPiece, int gameId) throws ResponseException {
+        ws = new WebSocketFacade(serverUrl, notificationHandler, loader);
+        ws.makeMove(ogPos, finalPos, promoPiece, gameId, auth);
     }
 
     public void clear() throws ResponseException {

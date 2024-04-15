@@ -62,6 +62,7 @@ public class ChessClient {
                 case "observe" -> joinObserver(params);
                 case "leave" -> leaveGame();
                 case "redrawboard" ->redrawBoard();
+                case "makemove" -> makeMove(params);
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -167,6 +168,18 @@ public class ChessClient {
         return "";
     }
 
+    private String makeMove(String[] params)throws ResponseException{
+        assertInGame();
+        if (params.length == 3){
+            String ogPos = params[0];
+            String finalPos = params[1];
+            String promoPiece = params[2];
+            server.makeMove(ogPos, finalPos, promoPiece, currentGameId);
+            return "Move made successfully";
+        }
+        throw new ResponseException(400, "Expected: <currentPosition> <desiredPosition> <promotionPiece>");
+    }
+
 
     public String help() {
         if (state == State.SIGNEDOUT) {
@@ -179,7 +192,7 @@ public class ChessClient {
         }
         else if (state == State.INGAME){
             return """
-                    - makeMove <currentPosition> <desiredPosition>
+                    - makeMove <currentPosition> <desiredPosition> <promotionPiece>
                     - showMoves <position>
                     - redrawBoard
                     - resign

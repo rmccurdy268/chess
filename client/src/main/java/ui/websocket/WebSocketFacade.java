@@ -2,12 +2,8 @@ package ui.websocket;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
-import webSocketMessages.serverMessages.LoadMessage;
-import webSocketMessages.serverMessages.Notification;
-import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserverCommand;
-import webSocketMessages.userCommands.JoinPlayerCommand;
-import webSocketMessages.userCommands.LeaveCommand;
+import webSocketMessages.serverMessages.*;
+import webSocketMessages.userCommands.*;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -79,6 +75,16 @@ public class WebSocketFacade extends Endpoint {
             var command = new JoinObserverCommand(gameId, String.valueOf(authToken));
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    public void makeMove(String ogPos, String finalPos, String promoPiece, int gameId, int authToken)throws ResponseException{
+        try{
+            var command = new MakeMoveCommand(ogPos, finalPos, promoPiece, gameId, authToken);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        }
+        catch(IOException ex){
             throw new ResponseException(500, ex.getMessage());
         }
     }
