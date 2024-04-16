@@ -24,10 +24,13 @@ import java.util.Objects;
 public class WebSocketHandler {
     private final ChessService service;
 
-    private final ConnectionManager connections = new ConnectionManager();
+    private final static Library library = new Library();
 
     public WebSocketHandler(ChessService service) {
         this.service = service;
+        for(int i = 1; i < 10; i++){
+            library.addLobby(i,new Lobby());
+        }
     }
 
     @OnWebSocketMessage
@@ -90,12 +93,12 @@ public class WebSocketHandler {
                     playerName = myGame.blackUsername();
                     playerColor = "black";
                 }
-                connections.add(playerName, session);
+                library.add(playerName, session, command.getGameId());
                 var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.implementation().getBoard());
                 session.getRemote().sendString(gameMessage.toString());
                 var message = String.format("%s has joined the game as the %s player.", playerName, playerColor);
                 var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-                connections.broadcast(playerName, notification);
+                library.getLobby(command.getGameId()).broadcast(playerName, notification);
             }
 
         } catch (DataAccessException e) {
@@ -117,12 +120,12 @@ public class WebSocketHandler {
             String playerName = "";
             AuthData data = service.getUserData(command.getAuthString());
             playerName = data.username();
-            connections.add(playerName, session);
+            library.add(playerName, session, command.getGameID());
             var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.implementation().getBoard());
             session.getRemote().sendString(gameMessage.toString());
             var message = String.format("%s has started observing the game.", playerName);
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            connections.broadcast(playerName, notification);
+            library.getLobby(command.getGameID()).broadcast(playerName, notification);
 
         } catch (DataAccessException e) {
             var message = "Error: game does not exist";
@@ -141,10 +144,10 @@ public class WebSocketHandler {
         catch (DataAccessException ignored) {
         }
         finally {
-            connections.remove(auth.username());
+            library.getLobby(command.getId()).remove(auth.username());
             var message = String.format("%s has left the game.", auth.username());
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            connections.broadcast(auth.username(), notification);
+            library.getLobby(command.getId()).broadcast(auth.username(), notification);
 
         }
     }
@@ -176,10 +179,10 @@ public class WebSocketHandler {
             myGame.makeMove(myMove);
             service.updateGame(myGame, command.getGameId(), auth.authToken());
             var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.getBoard());
-            connections.broadcastAll(gameMessage);
+            library.getLobby(command.getGameId()).broadcastAll(gameMessage);
             var message = String.format("%s has moved from %s to %s", auth.username(), command.getOgPos(), command.getFinalPos());
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            connections.broadcast(auth.username(), notification);
+            library.getLobby(command.getGameId()).broadcast(auth.username(), notification);
         } catch (DataAccessException | InvalidMoveException ex) {
             if(errorMessage.isEmpty()){
                 var message = "Error: Invalid Move";
@@ -204,7 +207,7 @@ public class WebSocketHandler {
             service.updateGame(myGame, command.getGameId(), auth.authToken());
             var message = String.format("%s has resigned. Game Over!", auth.username());
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            connections.notifyAll(notification);
+            library.getLobby(command.getGameId()).notifyAll(notification);
         } catch (DataAccessException ex) {
             var message = "Error:Couldn't resign";
             var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);

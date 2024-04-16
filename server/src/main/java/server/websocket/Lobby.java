@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConnectionManager {
+public class Lobby {
     public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+
+    public Lobby(){}
 
     public void add(String visitorName, Session session) {
         var connection = new Connection(visitorName, session);
@@ -37,6 +39,7 @@ public class ConnectionManager {
             connections.remove(c.visitorName);
         }
     }
+
     public void broadcastAll(LoadMessage loader) throws IOException {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
@@ -52,6 +55,7 @@ public class ConnectionManager {
             connections.remove(c.visitorName);
         }
     }
+
     public void notifyAll(Notification notification) throws IOException {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
