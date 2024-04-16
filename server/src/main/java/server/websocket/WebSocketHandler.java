@@ -18,6 +18,7 @@ import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @WebSocket
 public class WebSocketHandler {
@@ -107,6 +108,12 @@ public class WebSocketHandler {
     public void joinObserver(JoinObserverCommand command, Session session) throws IOException {
         try {
             GameData myGame = service.getGame(command.getAuthString(), command.getGameID());
+            if(myGame==null){
+                var message = "Error: game does not exist";
+                var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
+                session.getRemote().sendString(errMessage.toString());
+                throw new IOException("Game Does not Exist");
+            }
             String playerName = "";
             AuthData data = service.getUserData(command.getAuthString());
             playerName = data.username();
@@ -140,11 +147,29 @@ public class WebSocketHandler {
     }
 
     public void makeMove(MakeMoveCommand command, Session session) throws IOException {
+        var errorMessage = "";
         try {
             GameData myGameData = service.getGame(command.getAuthString(), command.getGameId());
             AuthData auth = service.getUserData(command.getAuthString());
             ChessGame myGame = myGameData.implementation();
             ChessMove myMove = command.getMove();
+            ChessGame.TeamColor currentTurn = myGame.getTeamTurn();
+            String currentPlayer ="";
+
+            if(currentTurn == ChessGame.TeamColor.WHITE){
+                currentPlayer = myGameData.whiteUsername();
+            } else if (currentTurn == ChessGame.TeamColor.BLACK){
+                currentPlayer = myGameData.blackUsername();
+            }
+            else{
+                errorMessage = "Error: Game is over.";
+                throw new InvalidMoveException("Game is over");
+
+            }
+            if(!Objects.equals(currentPlayer, auth.username())){
+                errorMessage = "Error: You may not make a move when it's not your turn.";
+                throw new InvalidMoveException("wrong turn");
+            }
             myGame.makeMove(myMove);
             service.updateGame(myGame, command.getGameId(), auth.authToken());
             var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.getBoard());
@@ -153,8 +178,10 @@ public class WebSocketHandler {
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
             connections.broadcast(auth.username(), notification);
         } catch (DataAccessException | InvalidMoveException ex) {
-            var message = "Error: Invalid Move";
-            var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
+            if(errorMessage.isEmpty()){
+                var message = "Error: Invalid Move";
+                }
+            var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, errorMessage);
             session.getRemote().sendString(errMessage.toString());
         }
     }
@@ -166,11 +193,9 @@ public class WebSocketHandler {
             ChessGame myGame = myGameData.implementation();
             myGame.endGame();
             service.updateGame(myGame, command.getGameId(), auth.authToken());
-            var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.getBoard());
-            connections.broadcastAll(gameMessage);
             var message = String.format("%s has resigned. Game Over!", auth.username());
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            connections.broadcast(auth.username(), notification);
+            connections.notifyAll(notification);
         } catch (DataAccessException ex) {
             var message = "Error:Couldn't resign";
             var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
