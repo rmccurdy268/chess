@@ -70,7 +70,7 @@ public class WebSocketHandler {
             }
             connections.add(playerName, session);
             var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.implementation().getBoard());
-            connections.broadcastAll(gameMessage);
+            session.getRemote().sendString(gameMessage.toString());
             var message = String.format("%s has joined the game as the %s player.", playerName, playerColor);
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
             connections.broadcast(playerName, notification);
