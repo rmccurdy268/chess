@@ -73,11 +73,17 @@ public class ServerFacade {
     }
 
     public void joinAsPlayer(int gameID, String color) throws ResponseException {
-        var path = "/game";
-        JoinTeamInput input = new JoinTeamInput(color, gameID);
-        this.makeRequest("PUT", path, input, null, true);
-        ws = new WebSocketFacade(serverUrl, notificationHandler, loader, error);
-        ws.joinPlayer(gameID, color,auth);
+        try{
+            var path = "/game";
+            JoinTeamInput input = new JoinTeamInput(color, gameID);
+            this.makeRequest("PUT", path, input, null, true);
+        }
+        catch(ResponseException ignored){}
+        finally{
+            ws = new WebSocketFacade(serverUrl, notificationHandler, loader, error);
+            ws.joinPlayer(gameID, color,auth);
+        }
+
     }
 
     public void joinAsObserver(int gameID) throws ResponseException{

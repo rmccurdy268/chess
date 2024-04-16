@@ -59,21 +59,44 @@ public class WebSocketHandler {
     public void joinPlayer(JoinPlayerCommand command, Session session) throws IOException {
         try {
             GameData myGame = service.getGame(command.getAuthString(), command.getGameId());
-            String playerName = "";
-            String playerColor = "";
-            if (command.getColor() == ChessGame.TeamColor.WHITE) {
-                playerName = myGame.whiteUsername();
-                playerColor = "white";
-            } else {
-                playerName = myGame.blackUsername();
-                playerColor = "black";
+            if (myGame == null) {
+                var message = "Error: Game Doesn't exist;";
+                var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
+                session.getRemote().sendString(errMessage.toString());
+                throw new IOException("Game Doesn't Exist");
             }
-            connections.add(playerName, session);
-            var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.implementation().getBoard());
-            session.getRemote().sendString(gameMessage.toString());
-            var message = String.format("%s has joined the game as the %s player.", playerName, playerColor);
-            var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            connections.broadcast(playerName, notification);
+            AuthData myAuth = service.getUserData(command.getAuthString());
+            String playerName = null;
+            try{
+                playerName = confirmPlayer(command.getColor(), myAuth.username(), myGame);
+            }
+            catch(IOException ex){
+                var message = "Error: Spot not reserved;";
+                var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
+                session.getRemote().sendString(errMessage.toString());
+                throw new IOException("Not reserved");
+            }
+            String playerColor = "";
+            if (playerName == null) {
+                var message = "Error: Spot Taken";
+                var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
+                session.getRemote().sendString(errMessage.toString());
+            } else {
+                if (command.getColor() == ChessGame.TeamColor.WHITE) {
+                    playerName = myGame.whiteUsername();
+                    playerColor = "white";
+                } else if (command.getColor() == ChessGame.TeamColor.BLACK) {
+                    playerName = myGame.blackUsername();
+                    playerColor = "black";
+                }
+                connections.add(playerName, session);
+                var gameMessage = new LoadMessage(ServerMessage.ServerMessageType.LOAD_GAME, myGame.implementation().getBoard());
+                session.getRemote().sendString(gameMessage.toString());
+                var message = String.format("%s has joined the game as the %s player.", playerName, playerColor);
+                var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+                connections.broadcast(playerName, notification);
+            }
+
         } catch (DataAccessException e) {
             var message = "Error: game does not exist";
             var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
@@ -153,5 +176,28 @@ public class WebSocketHandler {
             var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
             session.getRemote().sendString(errMessage.toString());
         }
+    }
+
+    //helper
+
+    //returns players name if correct, null if not correct
+    public String confirmPlayer(ChessGame.TeamColor color, String name, GameData game) throws IOException {
+        if(game.whiteUsername() == null){
+            throw new IOException("Spot not reserved");
+        }
+        if (color == ChessGame.TeamColor.WHITE) {
+            if (game.whiteUsername().equals(name)) {
+                return name;
+            } else {
+                throw new IOException("Spot not reserved");
+            }
+        } else if (color == ChessGame.TeamColor.BLACK) {
+            if (game.blackUsername().equals(name)) {
+                return name;
+            } else {
+                throw new IOException("Spot not reserved");
+            }
+        }
+        return null;
     }
 }
