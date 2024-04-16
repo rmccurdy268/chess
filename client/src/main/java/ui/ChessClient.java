@@ -197,14 +197,11 @@ public class ChessClient {
 
     private String resign()throws ResponseException{
         assertInGame();
-        if (currentColor == null){
-            throw new ResponseException(400,"Observer can not resign game");
-        }
         System.out.print("Confirm? y/n\n");
         Scanner scanner = new Scanner(System.in);
         var response = scanner.nextLine();
         if(response.equals("y")){
-            server.resign(currentGameId);
+            server.resign(currentGameId, currentColor);
             return "You have resigned from the game.";
         }
         else{

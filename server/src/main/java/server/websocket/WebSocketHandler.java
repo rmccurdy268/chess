@@ -132,17 +132,20 @@ public class WebSocketHandler {
     }
 
     public void leaveGame(LeaveCommand command, Session session) throws IOException {
+        AuthData auth =null;
         try {
+            auth = service.getUserData(command.getAuthString());
             service.deletePlayer(command.getColor(), command.getId(), command.getAuthString());
-            AuthData auth = service.getUserData(command.getAuthString());
+
+        }
+        catch (DataAccessException ignored) {
+        }
+        finally {
             connections.remove(auth.username());
             var message = String.format("%s has left the game.", auth.username());
             var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
             connections.broadcast(auth.username(), notification);
-        } catch (DataAccessException e) {
-            var message = "Error:User not in game";
-            var errMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, message);
-            session.getRemote().sendString(errMessage.toString());
+
         }
     }
 
@@ -191,6 +194,12 @@ public class WebSocketHandler {
             GameData myGameData = service.getGame(command.getAuthString(), command.getGameId());
             AuthData auth = service.getUserData(command.getAuthString());
             ChessGame myGame = myGameData.implementation();
+            if ((!Objects.equals(auth.username(), myGameData.whiteUsername()))&&(!Objects.equals(auth.username(), myGameData.blackUsername()))){
+                throw new DataAccessException("observer can not resign",400);
+            }
+            if (myGame.getTeamTurn() == ChessGame.TeamColor.NONE){
+                throw new DataAccessException("game is already over",400);
+            }
             myGame.endGame();
             service.updateGame(myGame, command.getGameId(), auth.authToken());
             var message = String.format("%s has resigned. Game Over!", auth.username());

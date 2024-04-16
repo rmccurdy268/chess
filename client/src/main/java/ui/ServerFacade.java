@@ -99,9 +99,9 @@ public class ServerFacade {
         ws.makeMove(ogPos, finalPos, promoPiece, gameId, auth);
     }
 
-    public void resign(int gameId) throws ResponseException {
+    public void resign(int gameId, String color) throws ResponseException {
         ws = new WebSocketFacade(serverUrl,notificationHandler, loader, error);
-        ws.resign(gameId, auth);
+        ws.resign(gameId, color, auth);
     }
 
     public void clear() throws ResponseException {
